@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-dale-navy text-white;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-dale-purple hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-dale-purple focus:ring-opacity-50;
+  }
+
+  .btn-secondary {
+    @apply bg-dale-navy-light hover:bg-dale-navy-lighter text-white font-medium py-2 px-4 rounded-lg border border-dale-navy-lighter transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-dale-purple focus:ring-opacity-50;
+  }
+
+  .btn-danger {
+    @apply bg-dale-red hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-dale-red focus:ring-opacity-50;
+  }
+
+  .btn-success {
+    @apply bg-dale-emerald hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-dale-emerald focus:ring-opacity-50;
+  }
+
+  .btn-warning {
+    @apply bg-dale-amber hover:bg-amber-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-dale-amber focus:ring-opacity-50;
+  }
+
+  .card {
+    @apply bg-dale-navy-light border border-dale-navy-lighter rounded-lg p-6 shadow-lg;
+  }
+
+  .card-hover {
+    @apply bg-dale-navy-light hover:bg-dale-navy-lighter border border-dale-navy-lighter rounded-lg p-6 shadow-lg transition-colors duration-200;
+  }
+
+  .input-field {
+    @apply bg-dale-navy-light border border-dale-navy-lighter rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-dale-purple focus:border-transparent transition-colors duration-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply bg-dale-purple text-white;
+  }
+
+  .badge-success {
+    @apply bg-dale-emerald text-white;
+  }
+
+  .badge-warning {
+    @apply bg-dale-amber text-white;
+  }
+
+  .badge-danger {
+    @apply bg-dale-red text-white;
+  }
+
+  .badge-info {
+    @apply bg-dale-blue text-white;
+  }
+
+  .status-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .status-pitching {
+    @apply bg-blue-500 bg-opacity-20 text-blue-300 border border-blue-500 border-opacity-30;
+  }
+
+  .status-negotiation {
+    @apply bg-yellow-500 bg-opacity-20 text-yellow-300 border border-yellow-500 border-opacity-30;
+  }
+
+  .status-approval {
+    @apply bg-orange-500 bg-opacity-20 text-orange-300 border border-orange-500 border-opacity-30;
+  }
+
+  .status-legal {
+    @apply bg-purple-500 bg-opacity-20 text-purple-300 border border-purple-500 border-opacity-30;
+  }
+
+  .status-signed {
+    @apply bg-green-500 bg-opacity-20 text-green-300 border border-green-500 border-opacity-30;
+  }
+
+  .status-invoiced {
+    @apply bg-indigo-500 bg-opacity-20 text-indigo-300 border border-indigo-500 border-opacity-30;
+  }
+
+  .status-paid {
+    @apply bg-dale-emerald bg-opacity-20 text-emerald-300 border border-dale-emerald border-opacity-30;
+  }
+
+  .status-rejected {
+    @apply bg-dale-red bg-opacity-20 text-red-300 border border-dale-red border-opacity-30;
+  }
+
+  .flow-badge {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+  }
+
+  .flow-inbound {
+    @apply bg-dale-red bg-opacity-20 text-red-300 border border-dale-red border-opacity-30;
+  }
+
+  .flow-outbound {
+    @apply bg-dale-blue bg-opacity-20 text-blue-300 border border-dale-blue border-opacity-30;
+  }
+
+  .urgent-badge {
+    @apply bg-dale-red bg-opacity-20 text-red-300 border border-dale-red border-opacity-30 animate-pulse;
+  }
+
+  .warning-badge {
+    @apply bg-dale-amber bg-opacity-20 text-amber-300 border border-dale-amber border-opacity-30;
+  }
+
+  .success-badge {
+    @apply bg-dale-emerald bg-opacity-20 text-emerald-300 border border-dale-emerald border-opacity-30;
+  }
+}

@@ -1,0 +1,527 @@
+# PROMPT COMPLETO - DALE PLAY SYNC CENTER
+
+## CONTEXTO DEL PROYECTO
+
+Estás construyendo el **Dale Play Sync Center**, una aplicación web para centralizar la gestión de sincronizaciones musicales (syncs) de Dale Play, integrando información de publishing (obras) y records (fonogramas).
+
+### Empresa
+- **Dale Play**: Editorial musical y sello discográfico que gestiona derechos de publishing y masters
+- **Usuarios**: 3 roles principales - Sync Managers, Legal, Admin/Finance
+- **Volumen**: ~20-50 oportunidades activas simultáneas, ~500 syncs anuales
+
+### Problema a Resolver
+Actualmente la gestión de syncs está fragmentada en Google Drive con nomenclaturas complejas. Necesitan una solución centralizada que:
+1. Automatice el cálculo de repartos (NPS - Net Publisher Share)
+2. Unifique la información de publishing y records
+3. Gestione el pipeline completo desde el pitch hasta el cobro
+4. Diferencie entre flows OUTBOUND (proactivos) e INBOUND (solicitudes directas)
+
+## ARQUITECTURA TÉCNICA
+
+### Stack Tecnológico
+```
+Frontend:
+- React 18+ con TypeScript
+- Tailwind CSS para estilos
+- Zustand para state management
+- React Query para fetching y caching
+- React Hook Form + Zod para formularios
+- Framer Motion para animaciones
+
+Backend:
+- Node.js + Express o Next.js API Routes
+- PostgreSQL con Prisma ORM
+- Redis para caching y sesiones
+- JWT para autenticación
+- WebSockets (Socket.io) para real-time updates
+
+Infraestructura:
+- Docker para containerización
+- AWS S3 para almacenamiento de documentos
+- SendGrid para notificaciones email
+- Vercel/AWS para deployment
+- GitHub Actions para CI/CD
+```
+
+### Estructura de Base de Datos
+
+```sql
+-- TABLAS PRINCIPALES
+
+-- Catálogo de Obras (Publishing)
+CREATE TABLE obras (
+    id UUID PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    iswc VARCHAR(20),
+    porcentaje_control_dp DECIMAL(5,2),
+    porcentaje_share_dp DECIMAL(5,2),
+    compositores JSONB,
+    territorio VARCHAR(100),
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Catálogo de Fonogramas (Records)
+CREATE TABLE fonogramas (
+    id UUID PRIMARY KEY,
+    obra_id UUID REFERENCES obras(id),
+    nombre VARCHAR(255) NOT NULL,
+    isrc VARCHAR(20),
+    porcentaje_dp DECIMAL(5,2),
+    artista_principal VARCHAR(255),
+    featured_artists JSONB,
+    sello VARCHAR(100),
+    año_lanzamiento INTEGER,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Oportunidades de Sync
+CREATE TABLE oportunidades (
+    id UUID PRIMARY KEY,
+    codigo VARCHAR(20) UNIQUE, -- OPP-2025-0001
+    tipo_flow ENUM('OUTBOUND', 'INBOUND'),
+    estado ENUM('PITCHING', 'NEGOTIATION', 'APPROVAL', 'LEGAL', 'SIGNED', 'INVOICED', 'PAID', 'REJECTED'),
+    cliente_id UUID REFERENCES clientes(id),
+    proyecto VARCHAR(255),
+    tipo_proyecto ENUM('SERIE', 'PELICULA', 'PUBLICIDAD', 'VIDEOJUEGO'),
+    territorio VARCHAR(100),
+    duracion_licencia VARCHAR(50),
+    tipo_uso VARCHAR(255),
+    budget DECIMAL(10,2),
+    mfn BOOLEAN DEFAULT false,
+    deadline DATE,
+    sync_manager_id UUID REFERENCES usuarios(id),
+    legal_id UUID REFERENCES usuarios(id),
+    admin_id UUID REFERENCES usuarios(id),
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Canciones en Oportunidades
+CREATE TABLE oportunidad_canciones (
+    id UUID PRIMARY KEY,
+    oportunidad_id UUID REFERENCES oportunidades(id),
+    obra_id UUID REFERENCES obras(id),
+    fonograma_id UUID REFERENCES fonogramas(id),
+    budget_cancion DECIMAL(10,2),
+    nps_publishing DECIMAL(10,2),
+    nps_recording DECIMAL(10,2),
+    nps_total DECIMAL(10,2),
+    aprobaciones JSONB, -- {bizarrap: {estado: 'aprobado', fecha: '2025-01-15'}}
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Clientes
+CREATE TABLE clientes (
+    id UUID PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    tipo ENUM('PLATAFORMA', 'MARCA', 'PRODUCTORA'),
+    contactos JSONB,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Usuarios
+CREATE TABLE usuarios (
+    id UUID PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    nombre VARCHAR(255) NOT NULL,
+    rol ENUM('SYNC_MANAGER', 'LEGAL', 'ADMIN', 'EXECUTIVE'),
+    permisos JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Historial de Actividad
+CREATE TABLE actividad (
+    id UUID PRIMARY KEY,
+    oportunidad_id UUID REFERENCES oportunidades(id),
+    usuario_id UUID REFERENCES usuarios(id),
+    tipo_actividad VARCHAR(50),
+    descripcion TEXT,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Documentos
+CREATE TABLE documentos (
+    id UUID PRIMARY KEY,
+    oportunidad_id UUID REFERENCES oportunidades(id),
+    tipo ENUM('CONTRATO', 'FACTURA', 'APROBACION', 'ONE_SHEET'),
+    url VARCHAR(500),
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Notificaciones
+CREATE TABLE notificaciones (
+    id UUID PRIMARY KEY,
+    usuario_id UUID REFERENCES usuarios(id),
+    tipo VARCHAR(50),
+    titulo VARCHAR(255),
+    mensaje TEXT,
+    leida BOOLEAN DEFAULT false,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+## ESTRUCTURA DE CARPETAS DEL PROYECTO
+
+```
+dale-play-sync-center/
+├── apps/
+│   ├── web/                    # Frontend Next.js/React
+│   │   ├── src/
+│   │   │   ├── app/            # App Router de Next.js
+│   │   │   │   ├── (auth)/     # Rutas autenticadas
+│   │   │   │   │   ├── dashboard/
+│   │   │   │   │   ├── opportunities/
+│   │   │   │   │   ├── catalog/
+│   │   │   │   │   ├── clients/
+│   │   │   │   │   └── reports/
+│   │   │   │   └── (public)/   # Rutas públicas
+│   │   │   ├── components/
+│   │   │   │   ├── ui/         # Componentes base
+│   │   │   │   ├── dashboard/  # Componentes del dashboard
+│   │   │   │   ├── opportunities/
+│   │   │   │   ├── catalog/
+│   │   │   │   └── shared/
+│   │   │   ├── hooks/
+│   │   │   ├── lib/
+│   │   │   │   ├── api/        # Cliente API
+│   │   │   │   ├── utils/
+│   │   │   │   └── constants/
+│   │   │   ├── stores/         # Zustand stores
+│   │   │   └── types/
+│   │   └── public/
+│   │
+│   └── api/                    # Backend Node.js/Express
+│       ├── src/
+│       │   ├── controllers/
+│       │   ├── services/
+│       │   ├── routes/
+│       │   ├── middleware/
+│       │   ├── utils/
+│       │   └── types/
+│       └── prisma/
+│           ├── schema.prisma
+│           └── migrations/
+│
+├── packages/
+│   ├── shared/                 # Código compartido
+│   │   ├── types/              # TypeScript types compartidos
+│   │   ├── utils/
+│   │   └── constants/
+│   └── ui/                     # Librería de componentes
+│
+├── docker/
+│   ├── Dockerfile.web
+│   ├── Dockerfile.api
+│   └── docker-compose.yml
+│
+└── docs/
+    ├── API.md
+    ├── DEPLOYMENT.md
+    └── USER_GUIDE.md
+```
+
+## FUNCIONALIDADES PRINCIPALES
+
+### 1. Dashboard
+- **KPIs en tiempo real**: Revenue YTD, Active Syncs, Conversion Rate, Avg Deal Time
+- **Pipeline visual**: Kanban con estados PITCHING → NEGOTIATION → LEGAL → SIGNED → INVOICED → PAID
+- **Sistema de alertas**: Urgentes (INBOUND), Deadlines, Aprobaciones pendientes, Facturas vencidas
+- **Filtros por**: Estado, Cliente, Tipo, Flow (INBOUND/OUTBOUND), Manager, Fecha
+
+### 2. Gestión de Oportunidades
+
+#### Flow OUTBOUND (Proactivo)
+1. Sync Manager crea oportunidad desde brief general
+2. Busca y propone canciones del catálogo
+3. Envía pitch al cliente
+4. Si acepta → Negociación → Legal → Firma → Facturación → Cobro
+5. Si rechaza → Estado REJECTED (puede reactivarse)
+
+#### Flow INBOUND (Solicitud Directa)
+1. Cliente solicita canción específica
+2. Estado inicial: APPROVAL (urgente)
+3. Legal gestiona aprobaciones express
+4. Confirmación → Documentación → Facturación prioritaria
+5. Tiempo promedio: 3-7 días vs 15-30 días del OUTBOUND
+
+### 3. Búsqueda Inteligente de Catálogo
+```javascript
+// Búsqueda flexible con fuzzy matching
+searchCatalog("biza 52") // Encuentra "Bzrp Music Sessions #52"
+searchCatalog("bizarrap quevedo") // Encuentra todas las colaboraciones
+
+// Auto-cálculo de NPS
+calculateNPS({
+  budget: 30000,
+  mfn: true,
+  publishing: {
+    controlDP: 50,
+    shareDP: 12.5
+  },
+  recording: {
+    controlDP: 30
+  }
+}) 
+// Returns: { pubNPS: 3750, recNPS: 9000, totalDP: 12750 }
+```
+
+### 4. Sistema de Notificaciones
+- **Real-time**: WebSockets para actualizaciones instantáneas
+- **Email**: Alertas críticas y deadlines
+- **In-app**: Badge con contador, panel de notificaciones
+- **Priorización**: INBOUND siempre prioritario
+
+### 5. Gestión de Derechos
+- **Split automático**: Publishing vs Recording
+- **Cálculo de NPS**: Automático basado en porcentajes
+- **Tracking de aprobaciones**: Por titular con fechas
+- **Visualización clara**: Gráficos de donut para splits
+
+## APIs PRINCIPALES
+
+### Endpoints REST
+
+```typescript
+// Oportunidades
+GET    /api/opportunities
+POST   /api/opportunities
+GET    /api/opportunities/:id
+PUT    /api/opportunities/:id
+DELETE /api/opportunities/:id
+PATCH  /api/opportunities/:id/status
+
+// Catálogo
+GET    /api/catalog/search?q=:query
+GET    /api/catalog/obras
+GET    /api/catalog/fonogramas
+POST   /api/catalog/obras
+POST   /api/catalog/fonogramas
+
+// Cálculo de NPS
+POST   /api/calculate-nps
+{
+  "budget": 30000,
+  "mfn": true,
+  "songs": [{
+    "obraId": "uuid",
+    "fonogramaId": "uuid"
+  }]
+}
+
+// Dashboard
+GET    /api/dashboard/kpis
+GET    /api/dashboard/pipeline
+GET    /api/dashboard/alerts
+
+// Notificaciones
+GET    /api/notifications
+PATCH  /api/notifications/:id/read
+POST   /api/notifications/mark-all-read
+```
+
+### WebSocket Events
+
+```javascript
+// Cliente
+socket.on('opportunity:updated', (data) => {})
+socket.on('opportunity:status_changed', (data) => {})
+socket.on('notification:new', (data) => {})
+socket.on('alert:urgent', (data) => {})
+
+// Servidor
+io.emit('opportunity:updated', opportunity)
+io.to(userId).emit('notification:new', notification)
+```
+
+## COMPONENTES CLAVE
+
+### 1. OpportunityCard
+```tsx
+interface OpportunityCardProps {
+  opportunity: Opportunity
+  view: 'kanban' | 'list' | 'grid'
+  onStatusChange: (status: Status) => void
+  onQuickAction: (action: QuickAction) => void
+}
+```
+
+### 2. CatalogSearch
+```tsx
+interface CatalogSearchProps {
+  onSelect: (selection: CatalogItem[]) => void
+  multiSelect?: boolean
+  filters?: CatalogFilters
+  calculateNPS?: boolean
+  budget?: number
+}
+```
+
+### 3. NPSCalculator
+```tsx
+interface NPSCalculatorProps {
+  songs: Song[]
+  budget: number
+  mfn: boolean
+  onCalculate: (results: NPSResults) => void
+}
+```
+
+### 4. PipelineView
+```tsx
+interface PipelineViewProps {
+  opportunities: Opportunity[]
+  view: 'kanban' | 'list' | 'calendar'
+  filters: PipelineFilters
+  onDragEnd: (result: DragResult) => void
+}
+```
+
+## REGLAS DE NEGOCIO
+
+### Estados y Transiciones
+```javascript
+const stateTransitions = {
+  PITCHING: ['NEGOTIATION', 'REJECTED'],
+  NEGOTIATION: ['APPROVAL', 'LEGAL', 'REJECTED'],
+  APPROVAL: ['LEGAL', 'REJECTED'],  // Solo INBOUND
+  LEGAL: ['SIGNED', 'REJECTED'],
+  SIGNED: ['INVOICED'],
+  INVOICED: ['PAID'],
+  PAID: [],  // Estado final
+  REJECTED: ['PITCHING']  // Puede reactivarse
+}
+```
+
+### Cálculo de NPS
+```javascript
+// Publishing NPS
+const publishingNPS = (budget * 0.5) * (shareDP / 100)
+
+// Recording NPS  
+const recordingNPS = (budget * 0.5) * (controlDP / 100)
+
+// Si MFN (Most Favored Nation)
+if (mfn) {
+  // Aplicar el mismo porcentaje a ambos lados
+  const totalControl = Math.max(publishingControl, recordingControl)
+  // Recalcular con el mayor porcentaje
+}
+```
+
+### Priorización
+1. **INBOUND siempre urgente**: Deadline máximo 48h
+2. **Alertas rojas**: Requieren acción inmediata
+3. **Alertas amarillas**: Requieren atención en 24h
+4. **Pipeline normal**: Según deadlines establecidos
+
+## MÉTRICAS Y REPORTES
+
+### KPIs Principales
+- **Revenue YTD**: Suma de syncs PAID en el año
+- **Active Syncs**: Count de estados != PAID && != REJECTED
+- **Conversion Rate**: (PAID / Total Opportunities) * 100
+- **Avg Deal Time**: AVG(fecha_paid - fecha_created)
+- **INBOUND vs OUTBOUND**: Comparativa de tasas de éxito
+
+### Reportes
+- **Por período**: Mensual, Trimestral, Anual
+- **Por cliente**: Top clientes, histórico
+- **Por catálogo**: Canciones más sincronizadas
+- **Por manager**: Performance individual
+- **Financiero**: Proyecciones, cobros pendientes
+
+## CONSIDERACIONES DE SEGURIDAD
+
+### Autenticación y Autorización
+```javascript
+// Permisos por rol
+const permissions = {
+  SYNC_MANAGER: ['opportunities:create', 'opportunities:edit', 'catalog:read'],
+  LEGAL: ['opportunities:approve', 'documents:manage', 'approvals:manage'],
+  ADMIN: ['invoices:create', 'payments:track', 'reports:financial'],
+  EXECUTIVE: ['*:read', 'reports:all']
+}
+```
+
+### Validación de Datos
+- Zod schemas para toda entrada de datos
+- Sanitización de búsquedas
+- Rate limiting en APIs
+- Validación de porcentajes (suma <= 100%)
+
+## OPTIMIZACIONES
+
+### Performance
+- Lazy loading de componentes pesados
+- Virtual scrolling para listas largas
+- Debounce en búsquedas (300ms)
+- Caching agresivo con React Query
+- Índices en campos de búsqueda frecuente
+
+### UX
+- Optimistic updates en cambios de estado
+- Skeleton loaders durante carga
+- Auto-save en formularios largos
+- Undo/Redo en acciones críticas
+- Shortcuts de teclado para power users
+
+## DEPLOYMENT
+
+### Environments
+- **Development**: localhost
+- **Staging**: staging.daleplay-sync.com
+- **Production**: sync.daleplay.com
+
+### CI/CD Pipeline
+```yaml
+# .github/workflows/deploy.yml
+- Test (Jest, Cypress)
+- Build (Docker)
+- Deploy (Vercel/AWS)
+- Health checks
+- Rollback automático si falla
+```
+
+## PRÓXIMOS PASOS
+
+### Fase 1 (MVP) - 4 semanas
+- [ ] Setup inicial del proyecto
+- [ ] Autenticación y roles
+- [ ] CRUD de oportunidades
+- [ ] Búsqueda básica de catálogo
+- [ ] Pipeline visual
+- [ ] Cálculo de NPS
+
+### Fase 2 (Core Features) - 4 semanas
+- [ ] Sistema de notificaciones
+- [ ] Gestión de documentos
+- [ ] Reportes básicos
+- [ ] Integración con email
+- [ ] Búsqueda avanzada
+
+### Fase 3 (Advanced) - 4 semanas
+- [ ] Real-time updates
+- [ ] Analytics avanzados
+- [ ] API pública
+- [ ] Mobile responsive
+- [ ] Integraciones externas
+
+---
+
+**INSTRUCCIONES PARA CURSOR**:
+1. Usa este documento como referencia principal
+2. Mantén consistencia con la nomenclatura (INBOUND/OUTBOUND, no pasivo/activo)
+3. Prioriza la funcionalidad de búsqueda inteligente y cálculo automático de NPS
+4. El diseño debe seguir los colores corporativos: Negro (#0A0A0A) y Verde eléctrico (#00FF88)
+5. Toda funcionalidad INBOUND debe tener indicadores visuales de urgencia
+6. Los componentes deben ser modulares y reutilizables
+7. Implementa tests unitarios para las reglas de negocio críticas
