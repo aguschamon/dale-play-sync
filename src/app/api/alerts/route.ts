@@ -3,6 +3,36 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
+// Tipos para las alertas
+interface Alert {
+  id: string
+  type: 'URGENT' | 'WARNING' | 'INFO'
+  title: string
+  description: string
+  opportunityId: string
+  opportunity: any
+  createdAt: Date
+  priority: number
+  category: string
+  daysOverdue?: number
+  daysUntilDeadline?: number
+}
+
+interface AlertSummary {
+  total: number
+  urgent: number
+  warning: number
+  info: number
+  byCategory: Record<string, number>
+}
+
+interface AlertsResponse {
+  alerts: Alert[]
+  alertsByCategory: Record<string, Alert[]>
+  summary: AlertSummary
+  lastUpdated: string
+}
+
 // GET /api/alerts - Obtener alertas del sistema
 export async function GET(request: NextRequest) {
   try {
@@ -16,13 +46,19 @@ export async function GET(request: NextRequest) {
             fonograma: true
           }
         }
+      },
+      where: {
+        // Solo mostrar oportunidades activas (no PAID ni REJECTED)
+        estado: {
+          notIn: ['PAID', 'REJECTED']
+        }
       }
     })
 
-    const alerts: any[] = []
+    const alerts: Alert[] = []
 
     opportunities.forEach((opportunity) => {
-      // Alertas por tipo de flow INBOUND
+      // Alertas por tipo de flow INBOUND (siempre prioritarias)
       if (opportunity.tipo_flow === 'INBOUND') {
         alerts.push({
           id: `inbound-${opportunity.id}`,
@@ -48,7 +84,7 @@ export async function GET(request: NextRequest) {
             id: `deadline-${opportunity.id}`,
             type: 'URGENT',
             title: 'Deadline Vencido',
-            description: `La oportunidad "${opportunity.proyecto}" tiene un deadline vencido.`,
+            description: `La oportunidad "${opportunity.proyecto}" tiene un deadline vencido hace ${Math.abs(diffDays)} días.`,
             opportunityId: opportunity.id,
             opportunity: opportunity,
             createdAt: opportunity.createdAt,
@@ -69,10 +105,23 @@ export async function GET(request: NextRequest) {
             category: 'DEADLINE',
             daysUntilDeadline: diffDays
           })
+        } else if (diffDays <= 7) {
+          alerts.push({
+            id: `deadline-info-${opportunity.id}`,
+            type: 'INFO',
+            title: 'Deadline en 1 Semana',
+            description: `La oportunidad "${opportunity.proyecto}" vence en ${diffDays} días.`,
+            opportunityId: opportunity.id,
+            opportunity: opportunity,
+            createdAt: opportunity.createdAt,
+            priority: 3,
+            category: 'DEADLINE',
+            daysUntilDeadline: diffDays
+          })
         }
       }
 
-      // Alertas por estado
+      // Alertas por estado específico
       if (opportunity.estado === 'APPROVAL') {
         alerts.push({
           id: `approval-${opportunity.id}`,
@@ -101,7 +150,7 @@ export async function GET(request: NextRequest) {
         })
       }
 
-      // Alertas por oportunidades sin canciones
+      // Alertas por oportunidades sin canciones (excepto en PITCHING)
       if (opportunity.canciones.length === 0 && opportunity.estado !== 'PITCHING') {
         alerts.push({
           id: `no-songs-${opportunity.id}`,
@@ -122,13 +171,31 @@ export async function GET(request: NextRequest) {
           id: `high-budget-no-songs-${opportunity.id}`,
           type: 'WARNING',
           title: 'Budget Alto Sin Canciones',
-          description: `La oportunidad "${opportunity.proyecto}" tiene un budget alto (${opportunity.budget}) pero no tiene canciones asignadas.`,
+          description: `La oportunidad "${opportunity.proyecto}" tiene un budget alto ($${opportunity.budget.toLocaleString()}) pero no tiene canciones asignadas.`,
           opportunityId: opportunity.id,
           opportunity: opportunity,
           createdAt: opportunity.createdAt,
           priority: 2,
           category: 'BUDGET'
         })
+      }
+
+      // Alertas por oportunidades en LEGAL por mucho tiempo
+      if (opportunity.estado === 'LEGAL') {
+        const daysInLegal = Math.ceil((new Date().getTime() - new Date(opportunity.updatedAt).getTime()) / (1000 * 60 * 60 * 24))
+        if (daysInLegal > 7) {
+          alerts.push({
+            id: `legal-stuck-${opportunity.id}`,
+            type: 'WARNING',
+            title: 'Legal Atascado',
+            description: `La oportunidad "${opportunity.proyecto}" está en Legal hace ${daysInLegal} días.`,
+            opportunityId: opportunity.id,
+            opportunity: opportunity,
+            createdAt: opportunity.createdAt,
+            priority: 2,
+            category: 'LEGAL'
+          })
+        }
       }
     })
 
@@ -145,10 +212,10 @@ export async function GET(request: NextRequest) {
       }
       acc[alert.category].push(alert)
       return acc
-    }, {} as Record<string, any[]>)
+    }, {} as Record<string, Alert[]>)
 
     // Resumen de alertas
-    const summary = {
+    const summary: AlertSummary = {
       total: alerts.length,
       urgent: alerts.filter(a => a.type === 'URGENT').length,
       warning: alerts.filter(a => a.type === 'WARNING').length,
@@ -159,18 +226,28 @@ export async function GET(request: NextRequest) {
       }, {} as Record<string, number>)
     }
 
-    return NextResponse.json({
+    const response: AlertsResponse = {
       alerts,
       alertsByCategory,
       summary,
       lastUpdated: new Date().toISOString()
-    })
+    }
+
+    return NextResponse.json(response)
   } catch (error) {
     console.error('Error fetching alerts:', error)
+    
+    // En caso de error, retornar respuesta de error estructurada
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      { 
+        error: 'Error interno del servidor',
+        message: 'No se pudieron obtener las alertas del sistema',
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }
 
