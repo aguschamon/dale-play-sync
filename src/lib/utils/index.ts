@@ -70,25 +70,25 @@ export function calculateNPS(budget: number, mfn: boolean, publishing: { control
   }
 }
 
-export function getUrgencyLevel(opportunity: Oportunidad): URGENCY_LEVELS {
+export function getUrgencyLevel(opportunity: Oportunidad): keyof typeof URGENCY_LEVELS {
   // INBOUND siempre es crítico
   if (opportunity.tipo_flow === FLOW_TYPES.INBOUND) {
-    return URGENCY_LEVELS.CRITICAL
+    return 'CRITICAL'
   }
   
   // Si no hay deadline, es bajo
   if (!opportunity.deadline) {
-    return URGENCY_LEVELS.LOW
+    return 'LOW'
   }
   
   const now = new Date()
   const deadline = new Date(opportunity.deadline)
   const diffHours = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60)
   
-  if (diffHours < 24) return URGENCY_LEVELS.CRITICAL
-  if (diffHours < 48) return URGENCY_LEVELS.HIGH
-  if (diffHours < 168) return URGENCY_LEVELS.MEDIUM // 1 semana
-  return URGENCY_LEVELS.LOW
+  if (diffHours < 24) return 'CRITICAL'
+  if (diffHours < 48) return 'HIGH'
+  if (diffHours < 168) return 'MEDIUM' // 1 semana
+  return 'LOW'
 }
 
 export function getDaysUntilDeadline(deadline: Date | string): number {

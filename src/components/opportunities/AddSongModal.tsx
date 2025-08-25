@@ -153,7 +153,7 @@ export default function AddSongModal({ opportunity, onAddSong, onClose }: AddSon
             
             {searchResults.length === 0 && !isSearching && (
               <p className="text-gray-400 text-center py-8">
-                No se encontraron canciones que coincidan con "{searchTerm}"
+                No se encontraron canciones que coincidan con &quot;{searchTerm}&quot;
               </p>
             )}
 

@@ -95,13 +95,13 @@ export default function RecentOpportunities() {
             
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[opp.estado]} text-white`}>
-                  {STATUS_LABELS[opp.estado]}
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[opp.estado as keyof typeof STATUS_COLORS]} text-white`}>
+                  {STATUS_LABELS[opp.estado as keyof typeof STATUS_LABELS]}
                 </span>
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                   opp.tipo_flow === 'INBOUND' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
                 }`}>
-                  {FLOW_LABELS[opp.tipo_flow]}
+                  {opp.tipo_flow}
                 </span>
               </div>
               

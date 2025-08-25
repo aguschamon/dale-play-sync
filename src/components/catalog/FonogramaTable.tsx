@@ -57,7 +57,7 @@ export default function FonogramaTable({ fonogramas, obras, onEdit, onDelete, is
           <tbody className="divide-y divide-dale-gray-light">
             {fonogramas.map((fonograma) => {
               const obra = obras.find(o => o.id === fonograma.obraId)
-              const featuredArtists = fonograma.featured_artists ? JSON.parse(fonograma.featured_artists) : []
+              const featuredArtists = typeof fonograma.featured_artists === 'string' ? JSON.parse(fonograma.featured_artists) : (fonograma.featured_artists || [])
               
               return (
                 <tr key={fonograma.id} className="hover:bg-dale-gray-light transition-colors duration-200">
@@ -123,7 +123,7 @@ export default function FonogramaTable({ fonogramas, obras, onEdit, onDelete, is
                   
                   <td className="py-4 px-4">
                     <span className="text-sm text-gray-400">
-                      {fonograma.anio_lanzamiento}
+                      {fonograma.año_lanzamiento}
                     </span>
                   </td>
                   

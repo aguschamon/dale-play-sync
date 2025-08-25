@@ -62,9 +62,9 @@ export default function FonogramasTab() {
     }
   }
 
-  const handleUpdateFonograma = async (id: string, fonogramaData: Partial<Fonograma>) => {
+  const handleUpdateFonograma = async (fonogramaData: Partial<Fonograma>) => {
     try {
-      const response = await fetch(`/api/catalog/fonogramas/${id}`, {
+      const response = await fetch(`/api/catalog/fonogramas/${fonogramaData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

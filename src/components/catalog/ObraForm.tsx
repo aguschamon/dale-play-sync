@@ -34,7 +34,7 @@ export default function ObraForm({ obra, onSubmit, onClose }: ObraFormProps) {
         iswc: obra.iswc || '',
         porcentaje_control_dp: obra.porcentaje_control_dp,
         porcentaje_share_dp: obra.porcentaje_share_dp,
-        compositores: obra.compositores ? JSON.parse(obra.compositores) : [],
+        compositores: typeof obra.compositores === 'string' ? JSON.parse(obra.compositores) : (obra.compositores || []),
         territorio: obra.territorio || 'Mundial'
       })
     }
@@ -75,11 +75,11 @@ export default function ObraForm({ obra, onSubmit, onClose }: ObraFormProps) {
 
     const obraData = {
       ...formData,
-      compositores: JSON.stringify(formData.compositores)
+      compositores: formData.compositores
     }
 
     if (obra) {
-      onSubmit(obra.id, obraData)
+      onSubmit({ ...obraData, id: obra.id })
     } else {
       onSubmit(obraData)
     }

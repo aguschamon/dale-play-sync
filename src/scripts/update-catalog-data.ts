@@ -112,12 +112,12 @@ async function main() {
         usuarioId: '00000000-0000-0000-0000-000000000000', // ID dummy
         tipo_actividad: 'SISTEMA',
         descripcion: 'Actualización masiva del catálogo: porcentajes corregidos, fonogramas limpiados, oportunidades PAID movidas a histórico',
-        metadata: {
+        metadata: JSON.stringify({
           obras_actualizadas: obrasToUpdate.length,
           fonogramas_eliminados: fonogramaToDelete ? 1 : 0,
           oportunidades_movidas: paidOpportunities.length,
           timestamp: new Date().toISOString()
-        }
+        })
       }
     })
 

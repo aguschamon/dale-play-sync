@@ -91,14 +91,16 @@ export default function OpportunityForm({ opportunity, clients, onSubmit, onClos
 
     const opportunityData = {
       ...formData,
-      estado: estadoInicial,
+      estado: estadoInicial as 'PITCHING' | 'APPROVAL',
       budget: parseFloat(formData.budget.toString()) || 0,
-      deadline: formData.deadline ? new Date(formData.deadline) : null,
-      metadata: formData.descripcion ? JSON.stringify({ descripcion: formData.descripcion }) : null
+      deadline: formData.deadline ? new Date(formData.deadline) : undefined,
+      metadata: formData.descripcion ? { descripcion: formData.descripcion } : undefined,
+      tipo_flow: formData.tipo_flow as 'OUTBOUND' | 'INBOUND',
+      tipo_proyecto: formData.tipo_proyecto as 'SERIE' | 'PELICULA' | 'PUBLICIDAD' | 'VIDEOJUEGO'
     }
 
     if (opportunity) {
-      onSubmit(opportunity.id, opportunityData)
+      onSubmit({ ...opportunityData, id: opportunity.id })
     } else {
       onSubmit(opportunityData)
     }

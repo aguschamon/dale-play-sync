@@ -102,9 +102,9 @@ export async function PUT(
         mfn: body.mfn !== undefined ? body.mfn : existingOpportunity.mfn,
         deadline: body.deadline ? new Date(body.deadline) : existingOpportunity.deadline,
         metadata: body.metadata || existingOpportunity.metadata,
-        syncManagerId: body.syncManagerId || existingOpportunity.syncManagerId,
-        legalId: body.legalId || existingOpportunity.legalId,
-        adminId: body.adminId || existingOpportunity.adminId
+        sync_manager_id: body.syncManagerId || existingOpportunity.sync_manager_id,
+        legal_id: body.legalId || existingOpportunity.legal_id,
+        admin_id: body.adminId || existingOpportunity.admin_id
       },
       include: {
         cliente: true
@@ -154,7 +154,7 @@ export async function DELETE(
       include: {
         _count: {
           select: {
-            oportunidadCanciones: true,
+            canciones: true,
             actividades: true,
             documentos: true
           }
@@ -170,7 +170,7 @@ export async function DELETE(
     }
 
     // Verificar si tiene registros relacionados
-    if (existingOpportunity._count.oportunidadCanciones > 0) {
+    if (existingOpportunity._count.canciones > 0) {
       return NextResponse.json(
         { error: 'No se puede eliminar una oportunidad que tiene canciones asociadas' },
         { status: 400 }

@@ -55,7 +55,7 @@ export default function ObraTable({ obras, onEdit, onDelete, isLoading }: ObraTa
           </thead>
           <tbody className="divide-y divide-dale-gray-light">
             {obras.map((obra) => {
-              const compositores = obra.compositores ? JSON.parse(obra.compositores) : []
+              const compositores = typeof obra.compositores === 'string' ? JSON.parse(obra.compositores) : (obra.compositores || [])
               
               return (
                 <tr key={obra.id} className="hover:bg-dale-gray-light transition-colors duration-200">

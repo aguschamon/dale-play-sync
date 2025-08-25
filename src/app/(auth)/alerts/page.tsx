@@ -212,7 +212,7 @@ export default function AlertsPage() {
         </div>
         <div className="card text-center">
           <div className="text-2xl font-bold text-white">
-            {alerts.filter(a => a.opportunity?.estado === 'INBOUND').length}
+            {alerts.filter(a => a.opportunity?.tipo_flow === 'INBOUND').length}
           </div>
           <div className="text-sm text-gray-400">INBOUND Activos</div>
         </div>

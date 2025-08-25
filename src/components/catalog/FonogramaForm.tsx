@@ -38,9 +38,9 @@ export default function FonogramaForm({ fonograma, obras, onSubmit, onClose }: F
         isrc: fonograma.isrc || '',
         porcentaje_dp: fonograma.porcentaje_dp,
         artista_principal: fonograma.artista_principal,
-        featured_artists: fonograma.featured_artists ? JSON.parse(fonograma.featured_artists) : [],
+        featured_artists: typeof fonograma.featured_artists === 'string' ? JSON.parse(fonograma.featured_artists) : (fonograma.featured_artists || []),
         sello: fonograma.sello || 'Dale Play Records',
-        anio_lanzamiento: fonograma.anio_lanzamiento || new Date().getFullYear()
+        anio_lanzamiento: fonograma.año_lanzamiento || new Date().getFullYear()
       })
     }
   }, [fonograma])
@@ -75,11 +75,11 @@ export default function FonogramaForm({ fonograma, obras, onSubmit, onClose }: F
 
     const fonogramaData = {
       ...formData,
-      featured_artists: JSON.stringify(formData.featured_artists)
+      featured_artists: formData.featured_artists
     }
 
     if (fonograma) {
-      onSubmit(fonograma.id, fonogramaData)
+      onSubmit({ ...fonogramaData, id: fonograma.id })
     } else {
       onSubmit(fonogramaData)
     }

@@ -96,9 +96,9 @@ export async function POST(request: NextRequest) {
         deadline: body.deadline ? new Date(body.deadline) : null,
         metadata: body.metadata || null,
         // Asignar usuarios por defecto (pueden ser actualizados después)
-        syncManagerId: body.syncManagerId || null,
-        legalId: body.legalId || null,
-        adminId: body.adminId || null
+        sync_manager_id: body.syncManagerId || 'system',
+        legal_id: body.legalId || null,
+        admin_id: body.adminId || null
       },
       include: {
         cliente: true

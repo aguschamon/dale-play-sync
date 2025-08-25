@@ -39,8 +39,7 @@ export async function POST(request: NextRequest) {
     const existingClient = await prisma.cliente.findFirst({
       where: {
         nombre: {
-          equals: body.nombre.trim(),
-          mode: 'insensitive'
+          equals: body.nombre.trim()
         }
       }
     })
