@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:static": "npm run prepare:static && next build && npm run restore:api",
+    "prepare:static": "./scripts/prepare-static-build.sh",
+    "restore:api": "./scripts/restore-api.sh",
     "start": "next start",
     "lint": "next lint",
     "db:generate": "prisma generate",
@@ -15,7 +18,8 @@
     "db:seed:opportunities": "tsx src/scripts/seed-opportunities.ts",
     "db:seed:historical": "tsx src/scripts/seed-historical-syncs.ts",
     "db:update:dates": "tsx src/scripts/update-opportunity-dates.ts",
-    "db:update:catalog": "tsx src/scripts/update-catalog-data.ts"
+    "db:update:catalog": "tsx src/scripts/update-catalog-data.ts",
+    "vercel-build": "npm run build:static"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

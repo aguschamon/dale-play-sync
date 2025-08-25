@@ -1,0 +1,28 @@
+# Excluir páginas de API del build estático
+src/app/api/
+src/app/(auth)/api/
+
+# Excluir archivos de base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Excluir archivos de desarrollo
+.env.local
+.env.development
+.env.test
+
+# Excluir archivos de build
+.next/
+out/
+dist/
+
+# Excluir archivos de logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Excluir archivos temporales
+.tmp/
+.temp/
