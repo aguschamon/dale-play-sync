@@ -1,5 +1,7 @@
 import DashboardKPIs from '@/components/dashboard/DashboardKPIs'
 import PipelineOverview from '@/components/dashboard/PipelineOverview'
+import RecentOpportunities from '@/components/dashboard/RecentOpportunities'
+import UrgentAlerts from '@/components/dashboard/UrgentAlerts'
 
 export default function DashboardPage() {
   return (
@@ -88,3 +90,6 @@ export default function DashboardPage() {
     </div>
   )
 }
+
+
+

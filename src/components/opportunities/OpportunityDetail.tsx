@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Plus, Music, Disc3, DollarSign, Calendar, MapPin, Building, AlertTriangle } from 'lucide-react'
 import { Oportunidad, Cliente, Obra, Fonograma, OportunidadCancion } from '@/types'
 import { formatCurrency, formatDate, calculateNPS } from '@/lib/utils'
-import { demoOpportunities, demoObras, demoFonogramas } from '@/lib/demo-data'
 import AddSongModal from './AddSongModal'
 import SongsTable from './SongsTable'
 
@@ -24,13 +23,17 @@ export default function OpportunityDetail({ opportunityId }: OpportunityDetailPr
     try {
       setIsLoading(true)
       
-      // Buscar oportunidad en datos demo
-      const opportunityData = demoOpportunities.find(opp => opp.id === opportunityId)
-      if (!opportunityData) {
+      // Fetch oportunidad desde la API
+      const opportunityResponse = await fetch(`/api/opportunities/${opportunityId}`)
+      if (!opportunityResponse.ok) {
         throw new Error('Oportunidad no encontrada')
       }
       
-      // Simular datos de canciones (en demo estático)
+      const opportunityData = await opportunityResponse.json()
+      setOpportunity(opportunityData)
+      
+      // TODO: Implementar API para canciones de oportunidad
+      // Por ahora usamos datos simulados basados en la oportunidad
       const demoSongs: OportunidadCancion[] = [
         {
           id: '1',
@@ -51,7 +54,6 @@ export default function OpportunityDetail({ opportunityId }: OpportunityDetailPr
         song.nps_total = (song.nps_publishing || 0) + (song.nps_recording || 0)
       })
       
-      setOpportunity(opportunityData as any)
       setSongs(demoSongs)
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -68,11 +70,8 @@ export default function OpportunityDetail({ opportunityId }: OpportunityDetailPr
 
   const handleAddSong = async (songData: { obraId: string; fonogramaId?: string; budget_cancion?: number; }) => {
     try {
-      // En demo estático, solo agregar a estado local
-      const obra = demoObras.find(o => o.id === songData.obraId)
-      const fonograma = demoFonogramas.find(f => f.obraId === songData.obraId)
-      
-      if (!obra) throw new Error('Obra no encontrada')
+      // TODO: Implementar API para agregar canciones
+      // Por ahora solo agregamos al estado local
       if (!opportunity?.budget) throw new Error('Budget de oportunidad no disponible')
       
       const newSong: OportunidadCancion = {
@@ -81,8 +80,8 @@ export default function OpportunityDetail({ opportunityId }: OpportunityDetailPr
         obraId: songData.obraId,
         fonogramaId: songData.fonogramaId || undefined,
         budget_cancion: songData.budget_cancion || opportunity.budget * 0.4,
-        nps_publishing: (songData.budget_cancion || opportunity.budget * 0.4) * 0.5 * (obra.porcentaje_share_dp / 100),
-        nps_recording: fonograma ? (songData.budget_cancion || opportunity.budget * 0.4) * 0.5 * (fonograma.porcentaje_dp / 100) : 0,
+        nps_publishing: (songData.budget_cancion || opportunity.budget * 0.4) * 0.5 * (12.5 / 100), // Default DP share
+        nps_recording: (songData.budget_cancion || opportunity.budget * 0.4) * 0.5 * (30 / 100), // Default DP control
         nps_total: 0,
         aprobaciones: {},
         createdAt: new Date()

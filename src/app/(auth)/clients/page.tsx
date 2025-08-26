@@ -91,6 +91,73 @@ export default function ClientsPage() {
     }
   }
 
+  // Función helper para manejar contactos de manera segura
+  const renderContactos = (contactos: any) => {
+    if (!contactos) {
+      return <div className="text-sm text-gray-400">Sin contactos</div>
+    }
+
+    try {
+      // Si es un string, intentar parsearlo como JSON
+      if (typeof contactos === 'string') {
+        const parsed = JSON.parse(contactos)
+        if (parsed && typeof parsed === 'object') {
+          // Es un JSON válido
+          return (
+            <>
+              {parsed.email && (
+                <div className="flex items-center space-x-2">
+                  <Mail className="w-3 h-3 text-gray-400" />
+                  <span className="text-xs">{parsed.email}</span>
+                </div>
+              )}
+              {parsed.telefono && (
+                <div className="flex items-center space-x-2">
+                  <Phone className="w-3 h-3 text-gray-400" />
+                  <span className="text-xs">{parsed.telefono}</span>
+                </div>
+              )}
+            </>
+          )
+        } else {
+          // Es un string simple (email directo)
+          return (
+            <div className="flex items-center space-x-2">
+              <Mail className="w-3 h-3 text-gray-400" />
+              <span className="text-xs">{contactos}</span>
+            </div>
+          )
+        }
+      } else if (typeof contactos === 'object') {
+        // Ya es un objeto
+        return (
+          <>
+            {contactos.email && (
+              <div className="flex items-center space-x-2">
+                <Mail className="w-3 h-3 text-gray-400" />
+                <span className="text-xs">{contactos.email}</span>
+              </div>
+            )}
+            {contactos.telefono && (
+              <div className="flex items-center space-x-2">
+                <Phone className="w-3 h-3 text-gray-400" />
+                <span className="text-xs">{contactos.telefono}</span>
+              </div>
+            )}
+          </>
+        )
+      }
+    } catch (error) {
+      // Si falla el parse, mostrar como string simple
+      return (
+        <div className="flex items-center space-x-2">
+          <Mail className="w-3 h-3 text-gray-400" />
+          <span className="text-xs">{contactos}</span>
+        </div>
+      )
+    }
+  }
+
   const filteredClients = clients.filter(client =>
     client.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.tipo.toLowerCase().includes(searchTerm.toLowerCase())
@@ -229,24 +296,7 @@ export default function ClientsPage() {
                   
                   <td className="py-4 px-4">
                     <div className="space-y-1">
-                      {client.contactos && typeof client.contactos === 'string' ? (
-                        <div className="text-sm text-gray-300">
-                          {JSON.parse(client.contactos).email && (
-                            <div className="flex items-center space-x-2">
-                              <Mail className="w-3 h-3 text-gray-400" />
-                              <span className="text-xs">{JSON.parse(client.contactos).email}</span>
-                            </div>
-                          )}
-                          {JSON.parse(client.contactos).telefono && (
-                            <div className="flex items-center space-x-2">
-                              <Phone className="w-3 h-3 text-gray-400" />
-                              <span className="text-xs">{JSON.parse(client.contactos).telefono}</span>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-sm text-gray-400">Sin contactos</div>
-                      )}
+                      {renderContactos(client.contactos)}
                     </div>
                   </td>
                   

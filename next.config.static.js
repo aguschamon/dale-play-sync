@@ -1,15 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuración para build estático
+  // Configuración para Vercel - versión estática
   output: 'export',
   
   // Configuración para páginas estáticas
   trailingSlash: true,
-  
-  // Desactivar funcionalidades que requieren servidor
-  experimental: {
-    appDir: true,
-  },
   
   // Configuración de imágenes para export estático
   images: {
@@ -19,16 +14,6 @@ const nextConfig = {
   
   // Configuración para export estático
   distDir: 'out',
-  
-  // Desactivar API routes para build estático
-  async rewrites() {
-    return []
-  },
-  
-  // Configuración para páginas estáticas
-  async generateStaticParams() {
-    return []
-  }
 }
 
 module.exports = nextConfig

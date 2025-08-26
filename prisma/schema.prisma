@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,51 +8,46 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  nombre    String
-  rol       String   // SYNC_MANAGER, LEGAL, ADMIN, EXECUTIVE
-  permisos  String?  // JSON string
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  oportunidadesCreadas    Oportunidad[] @relation("SyncManager")
-  oportunidadesLegales    Oportunidad[] @relation("Legal")
-  oportunidadesAdmin      Oportunidad[] @relation("Admin")
-  actividades             Actividad[]
-  notificaciones          Notificacion[]
+  id                   String         @id @default(cuid())
+  email                String         @unique
+  nombre               String
+  rol                  String
+  permisos             String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  actividades          Actividad[]
+  notificaciones       Notificacion[]
+  oportunidadesAdmin   Oportunidad[]  @relation("Admin")
+  oportunidadesLegales Oportunidad[]  @relation("Legal")
+  oportunidadesCreadas Oportunidad[]  @relation("SyncManager")
 
   @@map("usuarios")
 }
 
 model Cliente {
-  id        String   @id @default(cuid())
-  nombre    String
-  tipo      String   // PLATAFORMA, MARCA, PRODUCTORA
-  contactos String?  // JSON string
-  metadata  String?  // JSON string
-  createdAt DateTime @default(now())
-
-  // Relations
+  id            String        @id @default(cuid())
+  nombre        String
+  tipo          String
+  contactos     String?
+  metadata      String?
+  createdAt     DateTime      @default(now())
   oportunidades Oportunidad[]
 
   @@map("clientes")
 }
 
 model Obra {
-  id                    String   @id @default(cuid())
+  id                    String               @id @default(cuid())
   nombre                String
   iswc                  String?
   porcentaje_control_dp Float
   porcentaje_share_dp   Float
-  compositores          String?  // JSON string
+  compositores          String?
   territorio            String?
-  metadata              String?  // JSON string
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @default(now())
-
-  // Relations
+  metadata              String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @default(now())
+  titulares             TitularObra[]
   fonogramas            Fonograma[]
   oportunidadCanciones  OportunidadCancion[]
 
@@ -63,105 +55,97 @@ model Obra {
 }
 
 model Fonograma {
-  id                String   @id @default(cuid())
-  obraId            String
-  nombre            String
-  isrc              String?
-  porcentaje_dp     Float
-  artista_principal String
-  featured_artists  String?  // JSON string
-  sello             String?
-  anio_lanzamiento  Int?
-  metadata          String?  // JSON string
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now())
-
-  // Relations
-  obra                    Obra                    @relation(fields: [obraId], references: [id], onDelete: Cascade)
-  oportunidadCanciones    OportunidadCancion[]
+  id                   String               @id @default(cuid())
+  obraId               String
+  nombre               String
+  isrc                 String?
+  porcentaje_dp        Float
+  artista_principal    String
+  featured_artists     String?
+  sello                String?
+  anio_lanzamiento     Int?
+  metadata             String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @default(now())
+  titulares            TitularFonograma[]
+  obra                 Obra                 @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  oportunidadCanciones OportunidadCancion[]
 
   @@map("fonogramas")
 }
 
 model Oportunidad {
-  id              String   @id @default(cuid())
-  codigo          String   @unique // OPP-2025-0001
-  tipo_flow       String   // OUTBOUND, INBOUND
-  estado          String   // PITCHING, NEGOTIATION, APPROVAL, LEGAL, SIGNED, INVOICED, PAID, REJECTED
-  clienteId       String
-  proyecto        String
-  tipo_proyecto   String   // SERIE, PELICULA, PUBLICIDAD, VIDEOJUEGO
-  territorio      String?
+  id                String               @id @default(cuid())
+  codigo            String               @unique
+  tipo_flow         String
+  estado            String
+  clienteId         String
+  proyecto          String
+  tipo_proyecto     String
+  territorio        String?
   duracion_licencia String?
-  tipo_uso        String?
-  budget          Float?
-  mfn             Boolean  @default(false)
-  deadline        DateTime?
-  sync_manager_id String
-  legal_id        String?
-  admin_id        String?
-  metadata        String?  // JSON string
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now())
-
-  // Relations
-  cliente               Cliente                 @relation(fields: [clienteId], references: [id])
-  syncManager           User                    @relation("SyncManager", fields: [sync_manager_id], references: [id])
-  legal                 User?                   @relation("Legal", fields: [legal_id], references: [id])
-  admin                 User?                   @relation("Admin", fields: [admin_id], references: [id])
-  canciones             OportunidadCancion[]
-  actividades           Actividad[]
-  documentos            Documento[]
+  tipo_uso          String?
+  budget            Float?
+  mfn               Boolean              @default(false)
+  deadline          DateTime?
+  sync_manager_id   String
+  legal_id          String?
+  admin_id          String?
+  metadata          String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @default(now())
+  aprobaciones      Aprobacion[]
+  actividades       Actividad[]
+  documentos        Documento[]
+  canciones         OportunidadCancion[]
+  admin             User?                @relation("Admin", fields: [admin_id], references: [id])
+  legal             User?                @relation("Legal", fields: [legal_id], references: [id])
+  syncManager       User                 @relation("SyncManager", fields: [sync_manager_id], references: [id])
+  cliente           Cliente              @relation(fields: [clienteId], references: [id])
 
   @@map("oportunidades")
 }
 
 model OportunidadCancion {
-  id              String   @id @default(cuid())
-  oportunidadId   String
-  obraId          String
-  fonogramaId     String?
-  budget_cancion  Float?
-  nps_publishing  Float?
-  nps_recording   Float?
-  nps_total       Float?
-  aprobaciones    String?  // JSON string
-  createdAt       DateTime @default(now())
-
-  // Relations
-  oportunidad Oportunidad @relation(fields: [oportunidadId], references: [id], onDelete: Cascade)
-  obra       Obra        @relation(fields: [obraId], references: [id])
-  fonograma  Fonograma? @relation(fields: [fonogramaId], references: [id])
+  id             String      @id @default(cuid())
+  oportunidadId  String
+  obraId         String
+  fonogramaId    String?
+  budget_cancion Float?
+  nps_publishing Float?
+  nps_recording  Float?
+  nps_total      Float?
+  aprobaciones   String?
+  createdAt      DateTime    @default(now())
+  fonograma      Fonograma?  @relation(fields: [fonogramaId], references: [id])
+  obra           Obra        @relation(fields: [obraId], references: [id])
+  oportunidad    Oportunidad @relation(fields: [oportunidadId], references: [id], onDelete: Cascade)
 
   @@map("oportunidad_canciones")
 }
 
 model Actividad {
-  id              String   @id @default(cuid())
-  oportunidadId   String
-  usuarioId       String
-  tipo_actividad  String
-  descripcion     String?
-  metadata        String?  // JSON string
-  createdAt       DateTime @default(now())
-
-  // Relations
-  oportunidad Oportunidad @relation(fields: [oportunidadId], references: [id], onDelete: Cascade)
-  usuario     User        @relation(fields: [usuarioId], references: [id])
+  id             String      @id @default(cuid())
+  oportunidadId  String
+  usuarioId      String
+  tipo_actividad String
+  descripcion    String?
+  metadata       String?
+  createdAt      DateTime    @default(now())
+  usuario        User        @relation(fields: [usuarioId], references: [id])
+  oportunidad    Oportunidad @relation(fields: [oportunidadId], references: [id], onDelete: Cascade)
 
   @@map("actividad")
 }
 
 model Documento {
-  id              String   @id @default(cuid())
-  oportunidadId   String
-  tipo            String   // CONTRATO, FACTURA, APROBACION, ONE_SHEET
-  url             String?
-  metadata        String?  // JSON string
-  createdAt       DateTime @default(now())
-
-  // Relations
-  oportunidad Oportunidad @relation(fields: [oportunidadId], references: [id], onDelete: Cascade)
+  id            String      @id @default(cuid())
+  oportunidadId String
+  tipo          String
+  url           String?
+  metadata      String?
+  createdAt     DateTime    @default(now())
+  oportunidad   Oportunidad @relation(fields: [oportunidadId], references: [id], onDelete: Cascade)
 
   @@map("documentos")
 }
@@ -173,11 +157,56 @@ model Notificacion {
   titulo    String
   mensaje   String?
   leida     Boolean  @default(false)
-  metadata  String?  // JSON string
+  metadata  String?
   createdAt DateTime @default(now())
-
-  // Relations
-  usuario User @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuario   User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@map("notificaciones")
+}
+
+model Titular {
+  id           String             @id @default(uuid())
+  nombre       String
+  email        String
+  telefono     String?
+  tipo         String
+  notas        String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  aprobaciones Aprobacion[]
+  fonogramas   TitularFonograma[]
+  obras        TitularObra[]
+}
+
+model TitularObra {
+  id         String  @id @default(uuid())
+  titular_id String
+  obra_id    String
+  porcentaje Float
+  rol        String
+  obra       Obra    @relation(fields: [obra_id], references: [id])
+  titular    Titular @relation(fields: [titular_id], references: [id])
+}
+
+model TitularFonograma {
+  id           String    @id @default(uuid())
+  titular_id   String
+  fonograma_id String
+  porcentaje   Float
+  rol          String
+  fonograma    Fonograma @relation(fields: [fonograma_id], references: [id])
+  titular      Titular   @relation(fields: [titular_id], references: [id])
+}
+
+model Aprobacion {
+  id              String      @id @default(uuid())
+  oportunidad_id  String
+  titular_id      String
+  estado          String      @default("PENDIENTE")
+  token           String      @unique @default(uuid())
+  fecha_envio     DateTime    @default(now())
+  fecha_respuesta DateTime?
+  comentarios     String?
+  titular         Titular     @relation(fields: [titular_id], references: [id])
+  oportunidad     Oportunidad @relation(fields: [oportunidad_id], references: [id])
 }

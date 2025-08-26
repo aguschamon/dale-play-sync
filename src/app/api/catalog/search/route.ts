@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// GET /api/catalog/search?q=query - Búsqueda fuzzy del catálogo
+// GET /api/catalog/search?q=query
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -15,104 +15,102 @@ export async function GET(request: NextRequest) {
 
     const searchTerm = query.trim().toLowerCase()
 
-    // Búsqueda en obras
+    // Buscar en obras
     const obras = await prisma.obra.findMany({
       where: {
         OR: [
-          {
-            nombre: {
-              contains: searchTerm
-            }
-          },
-          {
-            iswc: {
-              contains: searchTerm
-            }
-          }
+          { nombre: { contains: searchTerm } },
+          { iswc: { contains: searchTerm } },
+          { compositores: { contains: searchTerm } }
         ]
       },
       include: {
-        fonogramas: {
-          orderBy: {
-            createdAt: 'desc'
-          }
-        }
+        fonogramas: true
       },
-      orderBy: {
-        nombre: 'asc'
-      }
+      take: 10
     })
 
-    // Búsqueda en fonogramas
+    // Buscar en fonogramas
     const fonogramas = await prisma.fonograma.findMany({
       where: {
         OR: [
-          {
-            nombre: {
-              contains: searchTerm
-            }
-          },
-          {
-            artista_principal: {
-              contains: searchTerm
-            }
-          },
-          {
-            isrc: {
-              contains: searchTerm
-            }
-          }
+          { nombre: { contains: searchTerm } },
+          { isrc: { contains: searchTerm } },
+          { artista_principal: { contains: searchTerm } },
+          { featured_artists: { contains: searchTerm } }
         ]
       },
       include: {
         obra: true
-      }
+      },
+      take: 10
     })
 
-    // Combinar resultados y eliminar duplicados
+    // Combinar y formatear resultados
     const results: any[] = []
 
-    // Agregar obras encontradas directamente
-    obras.forEach(obra => {
+    // Agregar obras con sus fonogramas
+    for (const obra of obras) {
       results.push({
-        obra,
-        fonogramas: obra.fonogramas || []
+        type: 'obra',
+        id: obra.id,
+        nombre: obra.nombre,
+        iswc: obra.iswc,
+        compositores: obra.compositores,
+        porcentaje_control_dp: obra.porcentaje_control_dp,
+        porcentaje_share_dp: obra.porcentaje_share_dp,
+        territorio: obra.territorio,
+        fonogramas: obra.fonogramas.map((f: any) => ({
+          id: f.id,
+          nombre: f.nombre,
+          isrc: f.isrc,
+          porcentaje_dp: f.porcentaje_dp,
+          artista_principal: f.artista_principal,
+          featured_artists: f.featured_artists,
+          sello: f.sello,
+          anio_lanzamiento: f.anio_lanzamiento
+        }))
       })
-    })
+    }
 
-    // Agregar obras encontradas a través de fonogramas
-    fonogramas.forEach(fonograma => {
-      if (!fonograma.obra) return
+    // Agregar fonogramas que no estén ya incluidos
+    for (const fonograma of fonogramas) {
+      const alreadyIncluded = results.some((r: any) => 
+        r.type === 'obra' && r.fonogramas.some((f: any) => f.id === fonograma.id)
+      )
       
-      const existingResult = results.find(r => r.obra.id === fonograma.obra.id)
-      
-      if (existingResult) {
-        // Si la obra ya existe, agregar el fonograma si no está
-        if (!existingResult.fonogramas.find((f: any) => f.id === fonograma.id)) {
-          existingResult.fonogramas.push(fonograma)
-        }
-      } else {
-        // Si la obra no existe, crear nuevo resultado
+      if (!alreadyIncluded) {
         results.push({
-          obra: fonograma.obra,
-          fonogramas: [fonograma]
+          type: 'fonograma',
+          id: fonograma.id,
+          nombre: fonograma.nombre,
+          isrc: fonograma.isrc,
+          porcentaje_dp: fonograma.porcentaje_dp,
+          artista_principal: fonograma.artista_principal,
+          featured_artists: fonograma.featured_artists,
+          sello: fonograma.sello,
+          anio_lanzamiento: fonograma.anio_lanzamiento,
+          obra: {
+            id: fonograma.obra.id,
+            nombre: fonograma.obra.nombre,
+            iswc: fonograma.obra.iswc,
+            compositores: fonograma.obra.compositores,
+            porcentaje_control_dp: fonograma.obra.porcentaje_control_dp,
+            porcentaje_share_dp: fonograma.obra.porcentaje_share_dp,
+            territorio: fonograma.obra.territorio
+          }
         })
       }
+    }
+
+    // Ordenar por relevancia (obras primero, luego fonogramas)
+    results.sort((a: any, b: any) => {
+      if (a.type === 'obra' && b.type === 'fonograma') return -1
+      if (a.type === 'fonograma' && b.type === 'obra') return 1
+      return 0
     })
 
-    // Ordenar por relevancia (obras que coinciden exactamente primero)
-    results.sort((a, b) => {
-      const aExactMatch = a.obra.nombre.toLowerCase().includes(searchTerm)
-      const bExactMatch = b.obra.nombre.toLowerCase().includes(searchTerm)
-      
-      if (aExactMatch && !bExactMatch) return -1
-      if (!aExactMatch && bExactMatch) return 1
-      
-      return a.obra.nombre.localeCompare(b.obra.nombre)
-    })
-
-    // Limitar resultados a 20 para evitar sobrecarga
-    return NextResponse.json(results.slice(0, 20))
+    return NextResponse.json(results)
   } catch (error) {
     console.error('Error searching catalog:', error)
     return NextResponse.json(

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import {
-  LayoutDashboard, Target, Music, Users, BarChart3, Settings, TrendingUp, AlertTriangle
+  LayoutDashboard, Target, Music, Users, BarChart3, Settings, TrendingUp, AlertTriangle, CheckSquare
 } from 'lucide-react'
 
 interface NavigationStats {
@@ -57,8 +57,10 @@ export default function Navigation() {
     { name: 'Oportunidades', href: '/opportunities', icon: Target, badge: isLoading ? '...' : stats.opportunities.toString(), loading: isLoading },
     { name: 'Pipeline', href: '/pipeline', icon: TrendingUp, badge: isLoading ? '...' : stats.pipeline.toString(), loading: isLoading },
     { name: 'Catálogo', href: '/catalog', icon: Music },
+    { name: 'Titulares', href: '/titulares', icon: Users },
     { name: 'Clientes', href: '/clients', icon: Users },
     { name: 'Alertas', href: '/alerts', icon: AlertTriangle, badge: isLoading ? '...' : stats.alerts.toString(), urgent: stats.alerts > 0, loading: isLoading },
+    { name: 'Aprobaciones', href: '/aprobaciones', icon: CheckSquare },
     { name: 'Reportes', href: '/reports', icon: BarChart3 },
     { name: 'Configuración', href: '/settings', icon: Settings }
   ]
