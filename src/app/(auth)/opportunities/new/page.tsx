@@ -163,10 +163,28 @@ export default function NewOpportunityPage() {
     }
   }
 
-  const selectSong = (item: CatalogItem) => {
+  const selectSong = async (item: CatalogItem) => {
     setSelectedSong(item)
     setSearchQuery('')
     setSearchResults([])
+    
+    // Buscar titulares asociados a esta obra
+    try {
+      const response = await fetch(`/api/titulares/by-obra?obraId=${item.id}`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.titulares && data.titulares.length > 0) {
+          // Auto-seleccionar titulares asociados
+          const titularIds = data.titulares.map((t: any) => t.id)
+          setSelectedTitulares(titularIds)
+          
+          // Mostrar mensaje de titulares detectados
+          console.log('✓ Titulares detectados para esta canción:', data.titulares)
+        }
+      }
+    } catch (error) {
+      console.error('Error buscando titulares asociados:', error)
+    }
   }
 
   const calculateNPS = () => {
@@ -588,6 +606,21 @@ export default function NewOpportunityPage() {
                         ×
                       </button>
                     </div>
+
+                    {/* Mensaje de titulares detectados */}
+                    {selectedTitulares.length > 0 && (
+                      <div className="mt-4 p-3 bg-dale-emerald bg-opacity-20 border border-dale-emerald rounded-lg">
+                        <div className="flex items-center space-x-2 text-dale-emerald">
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="text-sm font-medium">
+                            ✓ Titulares detectados para esta canción
+                          </span>
+                        </div>
+                        <p className="text-xs text-dale-emerald mt-1">
+                          Se han auto-seleccionado {selectedTitulares.length} titular{selectedTitulares.length !== 1 ? 'es' : ''} para aprobación
+                        </p>
+                      </div>
+                    )}
 
                     {/* Control de derechos */}
                     {rightsControl && (
