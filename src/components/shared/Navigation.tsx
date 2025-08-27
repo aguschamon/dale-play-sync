@@ -20,6 +20,11 @@ export default function Navigation() {
 
   useEffect(() => {
     fetchNavigationStats()
+    
+    // Actualizar cada 30 segundos
+    const interval = setInterval(fetchNavigationStats, 30000)
+    
+    return () => clearInterval(interval)
   }, [])
 
   const fetchNavigationStats = async () => {
@@ -37,7 +42,7 @@ export default function Navigation() {
         const activeOpportunities = opportunities.filter((opp: any) =>
           opp.estado !== 'PAID' && opp.estado !== 'REJECTED'
         ).length
-        const urgentAlerts = alerts.alerts?.filter((alert: any) => alert.type === 'URGENT').length || 0
+        const urgentAlerts = alerts.alerts?.filter((alert: any) => alert.type === 'urgent').length || 0
 
         setStats({
           opportunities: activeOpportunities,

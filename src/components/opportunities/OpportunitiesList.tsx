@@ -207,7 +207,7 @@ export default function OpportunitiesList({
                 </td>
                 
                 <td className="py-4 px-4">
-                  <div className="text-white font-medium">
+                  <div className="text-white font-medium truncate max-w-[120px]">
                     {formatCurrency(opportunity.budget || 0)}
                   </div>
                   {opportunity.mfn && (

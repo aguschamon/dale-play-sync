@@ -178,7 +178,7 @@ export default function OpportunityDetailModal({ opportunity, isOpen, onClose }:
                 <DollarSign className="w-5 h-5 text-dale-emerald" />
                 <div>
                   <div className="text-sm text-gray-400">Budget</div>
-                  <div className="text-dale-emerald font-medium text-xl">
+                  <div className="text-dale-emerald font-medium text-xl truncate max-w-[200px]">
                     {opportunity.budget ? formatCurrency(opportunity.budget) : 'Sin budget'}
                   </div>
                 </div>

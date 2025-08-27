@@ -225,7 +225,7 @@ export default function OpportunityDetail({ opportunityId }: OpportunityDetailPr
             <DollarSign className="w-5 h-5 text-green-400" />
             <div>
               <p className="text-sm text-gray-400">Budget</p>
-              <p className="font-medium text-white">{formatCurrency(totalBudget)}</p>
+              <p className="font-medium text-white truncate max-w-[150px]">{formatCurrency(totalBudget)}</p>
             </div>
           </div>
         </div>
@@ -277,7 +277,7 @@ export default function OpportunityDetail({ opportunityId }: OpportunityDetailPr
         <h3 className="text-lg font-semibold text-white mb-4">Resumen Financiero</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="text-center">
-            <p className="text-2xl font-bold text-white">{formatCurrency(totalBudget)}</p>
+            <p className="text-2xl font-bold text-white truncate max-w-[200px]">{formatCurrency(totalBudget)}</p>
             <p className="text-sm text-gray-400">Budget Total</p>
           </div>
           <div className="text-center">

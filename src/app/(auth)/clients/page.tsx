@@ -68,13 +68,13 @@ export default function ClientsPage() {
   const getClientTypeColor = (type: string) => {
     switch (type) {
       case 'PLATAFORMA':
-        return 'bg-blue-500'
+        return 'bg-blue-500/20 text-blue-400'
       case 'MARCA':
-        return 'bg-green-500'
+        return 'bg-green-500/20 text-green-400'
       case 'PRODUCTORA':
-        return 'bg-purple-500'
+        return 'bg-purple-500/20 text-purple-400'
       default:
-        return 'bg-gray-500'
+        return 'bg-gray-500/20 text-gray-400'
     }
   }
 
@@ -289,7 +289,7 @@ export default function ClientsPage() {
                   </td>
                   
                   <td className="py-4 px-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white ${getClientTypeColor(client.tipo)}`}>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getClientTypeColor(client.tipo)}`}>
                       {getClientTypeLabel(client.tipo)}
                     </span>
                   </td>
@@ -341,7 +341,7 @@ export default function ClientsPage() {
             <div key={client.id} className="p-4 bg-dale-gray-light rounded-lg">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-medium text-white">{client.nombre}</h4>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium text-white ${getClientTypeColor(client.tipo)}`}>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getClientTypeColor(client.tipo)}`}>
                   {getClientTypeLabel(client.tipo)}
                 </span>
               </div>

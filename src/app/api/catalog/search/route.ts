@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 // GET /api/catalog/search?q=query
 export async function GET(request: NextRequest) {
@@ -9,26 +7,36 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
 
+    console.log('🔍 Búsqueda solicitada:', query)
+
     if (!query || query.trim().length === 0) {
       return NextResponse.json([])
     }
 
     const searchTerm = query.trim().toLowerCase()
+    console.log('🔍 Término de búsqueda:', searchTerm)
 
-    // Buscar en obras
+    // Buscar en obras - búsqueda simple por nombre
     const obras = await prisma.obra.findMany({
       where: {
-        OR: [
-          { nombre: { contains: searchTerm } },
-          { iswc: { contains: searchTerm } },
-          { compositores: { contains: searchTerm } }
-        ]
+        nombre: { contains: searchTerm }
       },
       include: {
         fonogramas: true
       },
       take: 10
     })
+    
+    console.log('🔍 Obras encontradas:', obras.length)
+    if (obras.length > 0) {
+      console.log('🔍 Primera obra:', obras[0].nombre)
+    }
+    
+    // Debug: buscar todas las obras para comparar
+    const allObras = await prisma.obra.findMany({
+      select: { nombre: true }
+    })
+    console.log('🔍 Todas las obras:', allObras.map(o => o.nombre))
 
     // Buscar en fonogramas
     const fonogramas = await prisma.fonograma.findMany({

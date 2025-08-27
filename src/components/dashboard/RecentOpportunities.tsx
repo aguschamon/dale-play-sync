@@ -88,7 +88,7 @@ export default function RecentOpportunities() {
               </div>
               
               <div className="text-right">
-                <p className="text-lg font-bold text-dale-green">{formatCurrency(opp.budget)}</p>
+                <p className="text-lg font-bold text-dale-green truncate max-w-[120px]">{formatCurrency(opp.budget)}</p>
                 <p className="text-xs text-gray-400">{formatDate(opp.updatedAt)}</p>
               </div>
             </div>

@@ -278,7 +278,7 @@ export default function PipelinePage() {
                               {getFlowTypeLabel(opportunity.tipo_flow)}
                             </span>
                             {opportunity.budget && (
-                              <span className="text-xs text-dale-emerald font-medium">
+                              <span className="text-xs text-dale-emerald font-medium truncate max-w-[80px] ml-2">
                                 {formatCurrency(opportunity.budget)}
                               </span>
                             )}
@@ -338,7 +338,7 @@ export default function PipelinePage() {
                               {getFlowTypeLabel(opportunity.tipo_flow)}
                             </span>
                             {opportunity.budget && (
-                              <span className="text-xs text-dale-emerald font-medium">
+                              <span className="text-xs text-dale-emerald font-medium truncate max-w-[80px] ml-2">
                                 {formatCurrency(opportunity.budget)}
                               </span>
                             )}

@@ -313,7 +313,7 @@ export default function NewTitularPage() {
               <div className="text-center py-8 text-gray-400">
                 <Music className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No hay obras asociadas</p>
-                <p className="text-sm">Haz clic en "Agregar Obra" para comenzar</p>
+                <p className="text-sm">Haz clic en &quot;Agregar Obra&quot; para comenzar</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -411,7 +411,7 @@ export default function NewTitularPage() {
               <div className="text-center py-8 text-gray-400">
                 <Disc3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>No hay fonogramas asociados</p>
-                <p className="text-sm">Haz clic en "Agregar Fonograma" para comenzar</p>
+                <p className="text-sm">Haz clic en &quot;Agregar Fonograma&quot; para comenzar</p>
               </div>
             ) : (
               <div className="space-y-4">

@@ -164,72 +164,72 @@ export default function AprobacionesPage() {
         <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
           <div className="bg-dale-navy-light border border-dale-navy-lighter rounded-lg p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-dale-emerald rounded-lg">
+              <div className="p-2 bg-dale-emerald rounded-lg flex-shrink-0">
                 <CheckSquare className="w-6 h-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Total</p>
-                <p className="text-2xl font-bold text-white">{stats.total}</p>
+              <div className="ml-4 min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-400 truncate">Total</p>
+                <p className="text-3xl md:text-4xl font-bold text-white truncate">{stats.total}</p>
               </div>
             </div>
           </div>
           
           <div className="bg-dale-navy-light border border-dale-navy-lighter rounded-lg p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-dale-amber rounded-lg">
+              <div className="p-2 bg-dale-amber rounded-lg flex-shrink-0">
                 <Clock className="w-6 h-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Pendientes</p>
-                <p className="text-2xl font-bold text-white">{stats.pendientes}</p>
+              <div className="ml-4 min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-400 truncate">Pendientes</p>
+                <p className="text-3xl md:text-4xl font-bold text-white truncate">{stats.pendientes}</p>
               </div>
             </div>
           </div>
           
           <div className="bg-dale-navy-light border border-dale-navy-lighter rounded-lg p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-green-600 rounded-lg">
+              <div className="p-2 bg-green-600 rounded-lg flex-shrink-0">
                 <CheckCircle className="w-6 h-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Aprobadas</p>
-                <p className="text-2xl font-bold text-white">{stats.aprobadas}</p>
+              <div className="ml-4 min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-400 truncate">Aprobadas</p>
+                <p className="text-3xl md:text-4xl font-bold text-white truncate">{stats.aprobadas}</p>
               </div>
             </div>
           </div>
           
           <div className="bg-dale-navy-light border border-dale-navy-lighter rounded-lg p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-red-600 rounded-lg">
+              <div className="p-2 bg-red-600 rounded-lg flex-shrink-0">
                 <XCircle className="w-6 h-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">Rechazadas</p>
-                <p className="text-2xl font-bold text-white">{stats.rechazadas}</p>
+              <div className="ml-4 min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-400 truncate">Rechazadas</p>
+                <p className="text-3xl md:text-4xl font-bold text-white truncate">{stats.rechazadas}</p>
               </div>
             </div>
           </div>
           
           <div className="bg-dale-navy-light border border-dale-navy-lighter rounded-lg p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-dale-red rounded-lg">
+              <div className="p-2 bg-dale-red rounded-lg flex-shrink-0">
                 <AlertTriangle className="w-6 h-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">INBOUND</p>
-                <p className="text-2xl font-bold text-white">{stats.inbound}</p>
+              <div className="ml-4 min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-400 truncate">INBOUND</p>
+                <p className="text-3xl md:text-4xl font-bold text-white truncate">{stats.inbound}</p>
               </div>
             </div>
           </div>
           
           <div className="bg-dale-navy-light border border-dale-navy-lighter rounded-lg p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-dale-purple rounded-lg">
+              <div className="p-2 bg-dale-purple rounded-lg flex-shrink-0">
                 <CheckSquare className="w-6 h-6 text-white" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-400">OUTBOUND</p>
-                <p className="text-2xl font-bold text-white">{stats.outbound}</p>
+              <div className="ml-4 min-w-0 flex-1">
+                <p className="text-sm font-medium text-gray-400 truncate">OUTBOUND</p>
+                <p className="text-3xl md:text-4xl font-bold text-white truncate">{stats.outbound}</p>
               </div>
             </div>
           </div>

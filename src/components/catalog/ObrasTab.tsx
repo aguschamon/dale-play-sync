@@ -180,7 +180,13 @@ export default function ObrasTab() {
       {isFormOpen && (
         <ObraForm
           obra={editingObra}
-          onSubmit={editingObra ? handleUpdateObra : handleCreateObra}
+          onSubmit={async (data: Partial<Obra>) => {
+            if (editingObra) {
+              await handleUpdateObra(editingObra.id, data)
+            } else {
+              await handleCreateObra(data)
+            }
+          }}
           onClose={() => {
             setIsFormOpen(false)
             setEditingObra(null)

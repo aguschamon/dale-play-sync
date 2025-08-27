@@ -324,15 +324,15 @@ export default function AddSongModal({ opportunity, onAddSong, onClose }: AddSon
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-400">Publishing NPS:</span>
-                    <span className="text-blue-400 ml-2 font-medium">{formatCurrency(npsBreakdown.publishingNPS)}</span>
+                    <span className="text-blue-400 ml-2 font-medium truncate max-w-[120px]">{formatCurrency(npsBreakdown.publishingNPS)}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Recording NPS:</span>
-                    <span className="text-green-400 ml-2 font-medium">{formatCurrency(npsBreakdown.recordingNPS)}</span>
+                    <span className="text-green-400 ml-2 font-medium truncate max-w-[120px]">{formatCurrency(npsBreakdown.recordingNPS)}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Total Dale Play:</span>
-                    <span className="text-dale-green ml-2 font-medium">{formatCurrency(npsBreakdown.totalDP)}</span>
+                    <span className="text-dale-green ml-2 font-medium truncate max-w-[120px]">{formatCurrency(npsBreakdown.totalDP)}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Porcentaje:</span>

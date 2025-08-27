@@ -118,7 +118,7 @@ export default function DashboardKPIs() {
             </div>
             
             <div className="mb-2">
-              <div className="text-xl sm:text-2xl font-bold text-white">{kpi.value}</div>
+              <div className="text-xl sm:text-2xl font-bold text-white truncate max-w-[150px]">{kpi.value}</div>
               <div className="text-sm text-gray-400">{kpi.name}</div>
             </div>
           </div>

@@ -86,10 +86,9 @@ export default function NewOpportunityPage() {
     descripcion: ''
   })
 
-  // Cargar clientes y titulares al montar el componente
+  // Cargar solo clientes al montar el componente
   useEffect(() => {
     fetchClientes()
-    fetchTitulares()
   }, [])
 
   // Calcular NPS cuando cambie la canción seleccionada o el budget
@@ -101,14 +100,14 @@ export default function NewOpportunityPage() {
     }
   }, [selectedSong, formData.budget, formData.mfn])
 
-  // Pre-seleccionar todos los titulares si es INBOUND
+  // Pre-seleccionar todos los titulares si es INBOUND y hay titulares de una canción
   useEffect(() => {
-    if (formData.tipo_flow === 'INBOUND' && titulares.length > 0) {
+    if (formData.tipo_flow === 'INBOUND' && titulares.length > 0 && selectedSong) {
       setSelectedTitulares(titulares.map(t => t.id))
     } else if (formData.tipo_flow === 'OUTBOUND') {
       setSelectedTitulares([])
     }
-  }, [formData.tipo_flow, titulares])
+  }, [formData.tipo_flow, titulares, selectedSong])
 
   const fetchClientes = async () => {
     try {
@@ -168,22 +167,42 @@ export default function NewOpportunityPage() {
     setSearchQuery('')
     setSearchResults([])
     
-    // Buscar titulares asociados a esta obra
+    // Limpiar titulares seleccionados anteriormente
+    setSelectedTitulares([])
+    
+    // Buscar titulares asociados a esta canción (obra o fonograma)
     try {
-      const response = await fetch(`/api/titulares/by-obra?obraId=${item.id}`)
+      const response = await fetch(`/api/titulares/by-song?songId=${item.id}&type=${item.type}`)
       if (response.ok) {
         const data = await response.json()
         if (data.titulares && data.titulares.length > 0) {
+          // Actualizar el estado de titulares con solo los asociados a esta canción
+          setTitulares(data.titulares)
+          
           // Auto-seleccionar titulares asociados
           const titularIds = data.titulares.map((t: any) => t.id)
           setSelectedTitulares(titularIds)
           
           // Mostrar mensaje de titulares detectados
-          console.log('✓ Titulares detectados para esta canción:', data.titulares)
+          console.log(`✓ ${data.titulares.length} titulares detectados para ${item.type}:`, data.titulares)
+          
+          // Mostrar notificación visual
+          if (data.titulares.length > 0) {
+            // Aquí podrías mostrar un toast o notificación
+            console.log(`🎯 Titulares auto-seleccionados: ${data.titulares.map((t: any) => t.nombre).join(', ')}`)
+          }
+        } else {
+          // No hay titulares asociados, limpiar la lista
+          setTitulares([])
+          console.log('ℹ️ No se encontraron titulares asociados a esta canción')
         }
+      } else {
+        console.error('Error en la respuesta de la API:', response.status)
+        setTitulares([])
       }
     } catch (error) {
       console.error('Error buscando titulares asociados:', error)
+      setTitulares([])
     }
   }
 
@@ -600,7 +619,11 @@ export default function NewOpportunityPage() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setSelectedSong(null)}
+                        onClick={() => {
+                          setSelectedSong(null)
+                          setSelectedTitulares([]) // Limpiar titulares seleccionados
+                          setTitulares([]) // Limpiar lista de titulares
+                        }}
                         className="text-gray-400 hover:text-white transition-colors duration-200"
                       >
                         ×
@@ -787,11 +810,17 @@ export default function NewOpportunityPage() {
               </div>
             </div>
 
-            {titulares.length === 0 ? (
+            {!selectedSong ? (
               <div className="text-center py-8 text-gray-400">
                 <CheckCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No hay titulares registrados</p>
-                <p className="text-sm">Primero debes crear titulares en la sección correspondiente</p>
+                <p>Selecciona una canción para ver los titulares que requieren aprobación</p>
+                <p className="text-sm">Los titulares se cargarán automáticamente cuando selecciones una canción del catálogo</p>
+              </div>
+            ) : titulares.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <CheckCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>No se encontraron titulares asociados a esta canción</p>
+                <p className="text-sm">Esta canción no tiene titulares registrados que requieran aprobación</p>
               </div>
             ) : (
               <div className="space-y-3">

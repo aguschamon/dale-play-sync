@@ -92,7 +92,7 @@ export default function OpportunitiesStats({ opportunities }: OpportunitiesStats
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-400">{stat.name}</p>
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-2xl font-bold text-white truncate max-w-[150px]">{stat.value}</p>
               </div>
               <div className={`p-3 rounded-lg ${stat.color} bg-opacity-20`}>
                 <Icon className="w-6 h-6" />

@@ -123,8 +123,8 @@ export default function PipelineOverview() {
                           {(FLOW_LABELS as any)[opportunity.tipo_flow] || opportunity.tipo_flow}
                         </span>
                         {opportunity.budget && (
-                          <span className="text-xs text-dale-emerald font-medium">
-                            {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'USD' }).format(opportunity.budget)}
+                          <span className="text-xs text-dale-emerald font-medium truncate max-w-[80px] ml-2">
+                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(opportunity.budget)}
                           </span>
                         )}
                       </div>
@@ -180,8 +180,8 @@ export default function PipelineOverview() {
                             {(FLOW_LABELS as any)[opportunity.tipo_flow] || opportunity.tipo_flow}
                           </span>
                           {opportunity.budget && (
-                            <span className="text-xs text-dale-emerald font-medium">
-                              {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'USD' }).format(opportunity.budget)}
+                            <span className="text-xs text-dale-emerald font-medium truncate max-w-[80px] ml-2">
+                              {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(opportunity.budget)}
                             </span>
                           )}
                         </div>

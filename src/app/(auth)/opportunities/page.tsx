@@ -266,7 +266,7 @@ export default function OpportunitiesPage() {
                   
                   <td className="py-4 px-4">
                     {opportunity.budget ? (
-                      <div className="text-dale-emerald font-medium">
+                      <div className="text-dale-emerald font-medium truncate max-w-[120px]">
                         {formatCurrency(opportunity.budget)}
                       </div>
                     ) : (

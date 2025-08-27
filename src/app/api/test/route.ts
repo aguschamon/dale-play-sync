@@ -47,8 +47,8 @@ export async function GET() {
     console.error('❌ Error en test:', error)
     return NextResponse.json({
       error: 'Error en test',
-      details: error.message,
-      stack: error.stack
+      details: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
     }, { status: 500 })
   }
 }

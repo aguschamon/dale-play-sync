@@ -130,7 +130,7 @@ async function main() {
         tipo_uso: "Opening/Closing",
         budget: 30000,
         mfn: true,
-        deadline: new Date('2025-02-15'),
+        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 días - URGENTE
         metadata: JSON.stringify({
           descripcion: "Necesitan Bzrp Music Sessions #52 para el opening de la nueva temporada",
           urgencia: "ALTA",
@@ -157,7 +157,7 @@ async function main() {
         tipo_uso: "Background",
         budget: 25000,
         mfn: false,
-        deadline: new Date('2025-03-01'),
+        deadline: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 días
         metadata: JSON.stringify({
           descripcion: "Pitch de Milo J - 166 para escena emocional",
           urgencia: "MEDIA",
@@ -184,7 +184,7 @@ async function main() {
         tipo_uso: "Opening/Closing",
         budget: 80000,
         mfn: true,
-        deadline: new Date('2025-04-15'),
+        deadline: new Date(Date.now() + 75 * 24 * 60 * 60 * 1000), // 75 días
         metadata: JSON.stringify({
           descripcion: "Paquete de 3 canciones: Bzrp #52, 166, y Corazones Rotos",
           urgencia: "MEDIA",
@@ -211,7 +211,7 @@ async function main() {
         tipo_uso: "Background",
         budget: 50000,
         mfn: false,
-        deadline: new Date('2025-01-30'),
+        deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 días - URGENTE
         metadata: JSON.stringify({
           descripcion: "Documental sobre música latina usando Remember Me de Delaossa",
           urgencia: "BAJA",
@@ -238,7 +238,7 @@ async function main() {
         tipo_uso: "Background",
         budget: 120000,
         mfn: true,
-        deadline: new Date('2025-01-20'),
+        deadline: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000), // 45 días
         metadata: JSON.stringify({
           descripcion: "Pitch para comercial del Super Bowl con Bzrp Music Sessions #52",
           urgencia: "ALTA",
@@ -265,7 +265,7 @@ async function main() {
         tipo_uso: "Trailer",
         budget: 45000,
         mfn: false,
-        deadline: new Date('2025-05-01'),
+        deadline: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 días
         metadata: JSON.stringify({
           descripcion: "Película sobre el fenómeno de La Casa de Papel",
           urgencia: "MEDIA",

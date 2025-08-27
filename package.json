@@ -19,6 +19,7 @@
     "db:seed:historical": "tsx src/scripts/seed-historical-syncs.ts",
     "db:seed:titulares": "tsx src/scripts/seed-titulares.ts",
     "db:seed:realistic": "tsx src/scripts/seed-realistic-data.ts",
+    "db:seed:aprobaciones": "tsx src/scripts/seed-aprobaciones.ts",
     "db:update:dates": "tsx src/scripts/update-opportunity-dates.ts",
     "db:update:catalog": "tsx src/scripts/update-catalog-data.ts",
     "vercel-build": "npm run build:static"

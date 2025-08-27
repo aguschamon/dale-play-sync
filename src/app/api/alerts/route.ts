@@ -6,16 +6,19 @@ const prisma = new PrismaClient()
 // Tipos para las alertas
 interface Alert {
   id: string
-  type: 'URGENT' | 'WARNING' | 'INFO'
+  type: 'urgent' | 'warning' | 'info'
   title: string
   description: string
-  opportunityId: string
-  opportunity: any
-  createdAt: Date
-  priority: number
-  category: string
-  daysOverdue?: number
-  daysUntilDeadline?: number
+  date: Date
+  priority: 'Alta' | 'Media' | 'Baja'
+  metadata: {
+    client?: string
+    budget?: number
+    deadline?: Date
+    status?: string
+    opportunityId?: string
+    opportunity?: any
+  }
 }
 
 interface AlertSummary {
@@ -23,12 +26,10 @@ interface AlertSummary {
   urgent: number
   warning: number
   info: number
-  byCategory: Record<string, number>
 }
 
 interface AlertsResponse {
   alerts: Alert[]
-  alertsByCategory: Record<string, Alert[]>
   summary: AlertSummary
   lastUpdated: string
 }
@@ -57,23 +58,28 @@ export async function GET(request: NextRequest) {
 
     const alerts: Alert[] = []
 
+    // 1. ALERTAS URGENTES (3-4 alertas)
     opportunities.forEach((opportunity) => {
-      // Alertas por tipo de flow INBOUND (siempre prioritarias)
+      // INBOUND siempre es urgente
       if (opportunity.tipo_flow === 'INBOUND') {
         alerts.push({
           id: `inbound-${opportunity.id}`,
-          type: 'URGENT',
+          type: 'urgent',
           title: 'Oportunidad INBOUND Requiere Atención Inmediata',
           description: `La oportunidad "${opportunity.proyecto}" es INBOUND y requiere aprobación urgente.`,
-          opportunityId: opportunity.id,
-          opportunity: opportunity,
-          createdAt: opportunity.createdAt,
-          priority: 1,
-          category: 'INBOUND'
+          date: new Date(),
+          priority: 'Alta',
+          metadata: {
+            client: opportunity.cliente?.nombre,
+            budget: opportunity.budget || undefined,
+            status: opportunity.estado,
+            opportunityId: opportunity.id,
+            opportunity: opportunity
+          }
         })
       }
 
-      // Alertas por deadline
+      // Deadlines vencidos o < 48h
       if (opportunity.deadline) {
         const deadline = new Date(opportunity.deadline)
         const now = new Date()
@@ -81,154 +87,175 @@ export async function GET(request: NextRequest) {
 
         if (diffDays < 0) {
           alerts.push({
-            id: `deadline-${opportunity.id}`,
-            type: 'URGENT',
+            id: `deadline-overdue-${opportunity.id}`,
+            type: 'urgent',
             title: 'Deadline Vencido',
             description: `La oportunidad "${opportunity.proyecto}" tiene un deadline vencido hace ${Math.abs(diffDays)} días.`,
-            opportunityId: opportunity.id,
-            opportunity: opportunity,
-            createdAt: opportunity.createdAt,
-            priority: 1,
-            category: 'DEADLINE',
-            daysOverdue: Math.abs(diffDays)
+            date: new Date(),
+            priority: 'Alta',
+            metadata: {
+              client: opportunity.cliente?.nombre,
+              budget: opportunity.budget || undefined,
+              deadline: deadline,
+              status: opportunity.estado,
+              opportunityId: opportunity.id,
+              opportunity: opportunity
+            }
           })
-        } else if (diffDays <= 3) {
+        } else if (diffDays <= 2) {
+          alerts.push({
+            id: `deadline-critical-${opportunity.id}`,
+            type: 'urgent',
+            title: 'Deadline Crítico',
+            description: `La oportunidad "${opportunity.proyecto}" vence en ${diffDays} días.`,
+            date: new Date(),
+            priority: 'Alta',
+            metadata: {
+              client: opportunity.cliente?.nombre,
+              budget: opportunity.budget || undefined,
+              deadline: deadline,
+              status: opportunity.estado,
+              opportunityId: opportunity.id,
+              opportunity: opportunity
+            }
+          })
+        }
+      }
+    })
+
+    // 2. ALERTAS DE ADVERTENCIA (2-3 alertas)
+    opportunities.forEach((opportunity) => {
+      // Deadlines próximos (7-14 días)
+      if (opportunity.deadline) {
+        const deadline = new Date(opportunity.deadline)
+        const now = new Date()
+        const diffDays = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+        if (diffDays > 2 && diffDays <= 14) {
           alerts.push({
             id: `deadline-warning-${opportunity.id}`,
-            type: 'WARNING',
+            type: 'warning',
             title: 'Deadline Próximo',
             description: `La oportunidad "${opportunity.proyecto}" vence en ${diffDays} días.`,
-            opportunityId: opportunity.id,
-            opportunity: opportunity,
-            createdAt: opportunity.createdAt,
-            priority: 2,
-            category: 'DEADLINE',
-            daysUntilDeadline: diffDays
-          })
-        } else if (diffDays <= 7) {
-          alerts.push({
-            id: `deadline-info-${opportunity.id}`,
-            type: 'INFO',
-            title: 'Deadline en 1 Semana',
-            description: `La oportunidad "${opportunity.proyecto}" vence en ${diffDays} días.`,
-            opportunityId: opportunity.id,
-            opportunity: opportunity,
-            createdAt: opportunity.createdAt,
-            priority: 3,
-            category: 'DEADLINE',
-            daysUntilDeadline: diffDays
+            date: new Date(),
+            priority: 'Media',
+            metadata: {
+              client: opportunity.cliente?.nombre,
+              budget: opportunity.budget || undefined,
+              deadline: deadline,
+              status: opportunity.estado,
+              opportunityId: opportunity.id,
+              opportunity: opportunity
+            }
           })
         }
       }
 
-      // Alertas por estado específico
+      // Aprobaciones pendientes
       if (opportunity.estado === 'APPROVAL') {
         alerts.push({
           id: `approval-${opportunity.id}`,
-          type: 'WARNING',
-          title: 'Aprobación Pendiente',
+          type: 'warning',
+          title: 'Aprobación Legal Pendiente',
           description: `La oportunidad "${opportunity.proyecto}" está esperando aprobación legal.`,
-          opportunityId: opportunity.id,
-          opportunity: opportunity,
-          createdAt: opportunity.createdAt,
-          priority: 2,
-          category: 'APPROVAL'
+          date: new Date(),
+          priority: 'Media',
+          metadata: {
+            client: opportunity.cliente?.nombre,
+            budget: opportunity.budget || undefined,
+            status: opportunity.estado,
+            opportunityId: opportunity.id,
+            opportunity: opportunity
+          }
         })
       }
 
-      if (opportunity.estado === 'INVOICED') {
-        alerts.push({
-          id: `invoiced-${opportunity.id}`,
-          type: 'INFO',
-          title: 'Facturación Pendiente',
-          description: `La oportunidad "${opportunity.proyecto}" está facturada y esperando pago.`,
-          opportunityId: opportunity.id,
-          opportunity: opportunity,
-          createdAt: opportunity.createdAt,
-          priority: 3,
-          category: 'INVOICING'
-        })
-      }
-
-      // Alertas por oportunidades sin canciones (excepto en PITCHING)
+      // Sin canciones asignadas
       if (opportunity.canciones.length === 0 && opportunity.estado !== 'PITCHING') {
         alerts.push({
           id: `no-songs-${opportunity.id}`,
-          type: 'WARNING',
+          type: 'warning',
           title: 'Sin Canciones Asignadas',
           description: `La oportunidad "${opportunity.proyecto}" no tiene canciones asignadas.`,
-          opportunityId: opportunity.id,
-          opportunity: opportunity,
-          createdAt: opportunity.createdAt,
-          priority: 2,
-          category: 'CATALOG'
-        })
-      }
-
-      // Alertas por oportunidades con budget alto sin canciones
-      if (opportunity.budget && opportunity.budget > 50000 && opportunity.canciones.length === 0) {
-        alerts.push({
-          id: `high-budget-no-songs-${opportunity.id}`,
-          type: 'WARNING',
-          title: 'Budget Alto Sin Canciones',
-          description: `La oportunidad "${opportunity.proyecto}" tiene un budget alto ($${opportunity.budget.toLocaleString()}) pero no tiene canciones asignadas.`,
-          opportunityId: opportunity.id,
-          opportunity: opportunity,
-          createdAt: opportunity.createdAt,
-          priority: 2,
-          category: 'BUDGET'
-        })
-      }
-
-      // Alertas por oportunidades en LEGAL por mucho tiempo
-      if (opportunity.estado === 'LEGAL') {
-        const daysInLegal = Math.ceil((new Date().getTime() - new Date(opportunity.updatedAt).getTime()) / (1000 * 60 * 60 * 24))
-        if (daysInLegal > 7) {
-          alerts.push({
-            id: `legal-stuck-${opportunity.id}`,
-            type: 'WARNING',
-            title: 'Legal Atascado',
-            description: `La oportunidad "${opportunity.proyecto}" está en Legal hace ${daysInLegal} días.`,
+          date: new Date(),
+          priority: 'Media',
+          metadata: {
+            client: opportunity.cliente?.nombre,
+            budget: opportunity.budget || undefined,
+            status: opportunity.estado,
             opportunityId: opportunity.id,
-            opportunity: opportunity,
-            createdAt: opportunity.createdAt,
-            priority: 2,
-            category: 'LEGAL'
-          })
-        }
+            opportunity: opportunity
+          }
+        })
       }
+    })
+
+    // 3. ALERTAS INFORMATIVAS (2-3 alertas)
+    // Nuevas oportunidades creadas recientemente
+    const recentOpportunities = opportunities
+      .filter(opp => {
+        const daysSinceCreation = Math.ceil((new Date().getTime() - new Date(opp.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+        return daysSinceCreation <= 3
+      })
+      .slice(0, 2)
+
+    recentOpportunities.forEach((opportunity) => {
+      alerts.push({
+        id: `new-opportunity-${opportunity.id}`,
+        type: 'info',
+        title: 'Nueva Oportunidad Creada',
+        description: `Se ha creado la oportunidad "${opportunity.proyecto}" con ${opportunity.cliente?.nombre}.`,
+        date: new Date(opportunity.createdAt),
+        priority: 'Baja',
+        metadata: {
+          client: opportunity.cliente?.nombre,
+          budget: opportunity.budget || undefined,
+          status: opportunity.estado,
+          opportunityId: opportunity.id,
+          opportunity: opportunity
+        }
+      })
+    })
+
+    // Oportunidades facturadas
+    const invoicedOpportunities = opportunities.filter(opp => opp.estado === 'INVOICED').slice(0, 1)
+    invoicedOpportunities.forEach((opportunity) => {
+      alerts.push({
+        id: `invoiced-${opportunity.id}`,
+        type: 'info',
+        title: 'Oportunidad Facturada',
+        description: `La oportunidad "${opportunity.proyecto}" ha sido facturada y está esperando pago.`,
+        date: new Date(),
+        priority: 'Baja',
+        metadata: {
+          client: opportunity.cliente?.nombre,
+          budget: opportunity.budget || undefined,
+          status: opportunity.estado,
+          opportunityId: opportunity.id,
+          opportunity: opportunity
+        }
+      })
     })
 
     // Ordenar por prioridad y fecha
     alerts.sort((a, b) => {
-      if (a.priority !== b.priority) return a.priority - b.priority
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    })
-
-    // Agrupar por categoría
-    const alertsByCategory = alerts.reduce((acc, alert) => {
-      if (!acc[alert.category]) {
-        acc[alert.category] = []
+      const priorityOrder = { 'Alta': 1, 'Media': 2, 'Baja': 3 }
+      if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+        return priorityOrder[a.priority] - priorityOrder[b.priority]
       }
-      acc[alert.category].push(alert)
-      return acc
-    }, {} as Record<string, Alert[]>)
+      return new Date(b.date).getTime() - new Date(a.date).getTime()
+    })
 
     // Resumen de alertas
     const summary: AlertSummary = {
       total: alerts.length,
-      urgent: alerts.filter(a => a.type === 'URGENT').length,
-      warning: alerts.filter(a => a.type === 'WARNING').length,
-      info: alerts.filter(a => a.type === 'INFO').length,
-      byCategory: Object.keys(alertsByCategory).reduce((acc, category) => {
-        acc[category] = alertsByCategory[category].length
-        return acc
-      }, {} as Record<string, number>)
+      urgent: alerts.filter(a => a.type === 'urgent').length,
+      warning: alerts.filter(a => a.type === 'warning').length,
+      info: alerts.filter(a => a.type === 'info').length
     }
 
     const response: AlertsResponse = {
       alerts,
-      alertsByCategory,
       summary,
       lastUpdated: new Date().toISOString()
     }

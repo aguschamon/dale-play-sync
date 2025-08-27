@@ -37,7 +37,7 @@ export async function GET() {
   } catch (error) {
     console.error('❌ Error fetching titulares:', error)
     return NextResponse.json(
-      { error: 'Error interno del servidor al obtener titulares', details: error.message },
+      { error: 'Error interno del servidor al obtener titulares', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

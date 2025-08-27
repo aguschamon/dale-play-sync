@@ -45,7 +45,7 @@ export default function SongsTable({ songs, opportunity, onDeleteSong }: SongsTa
           <div className="text-sm text-gray-400">Canciones</div>
         </div>
         <div className="card text-center">
-          <div className="text-2xl font-bold text-white">{formatCurrency(totalBudget)}</div>
+          <div className="text-2xl font-bold text-white truncate max-w-[150px]">{formatCurrency(totalBudget)}</div>
           <div className="text-sm text-gray-400">Budget Total</div>
         </div>
         <div className="card text-center">
@@ -104,7 +104,7 @@ export default function SongsTable({ songs, opportunity, onDeleteSong }: SongsTa
                   </td>
                   
                   <td className="py-4 px-4">
-                    <div className="text-white font-medium">{formatCurrency(budget)}</div>
+                    <div className="text-white font-medium truncate max-w-[100px]">{formatCurrency(budget)}</div>
                     {song.budget_cancion && (
                       <div className="text-xs text-gray-400">Específico</div>
                     )}
@@ -155,7 +155,7 @@ export default function SongsTable({ songs, opportunity, onDeleteSong }: SongsTa
       <div className="mt-6 p-4 bg-dale-gray-light rounded-lg">
         <div className="grid grid-cols-5 gap-4 text-sm">
           <div className="text-gray-400">Total:</div>
-          <div className="text-white font-medium">{formatCurrency(totalBudget)}</div>
+          <div className="text-white font-medium truncate max-w-[120px]">{formatCurrency(totalBudget)}</div>
           <div className="text-blue-400 font-medium">
             {formatCurrency(songs.reduce((sum, song) => {
               const budget = song.budget_cancion || (opportunity.budget || 0) / Math.max(songs.length, 1)
